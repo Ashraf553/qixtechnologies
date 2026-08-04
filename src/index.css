@@ -734,7 +734,7 @@ html, body {
 .feature-card:hover::before {
   opacity: 1;
 }
-.feature-card:hover {
+.feature-card:hover, .feature-card:active {
   transform: translateY(-6px) scale(1.02);
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.22);
@@ -754,7 +754,7 @@ html, body {
   background: rgba(255,255,255,0.02);
   transition: all 0.3s ease;
 }
-.feature-card:hover .feature-icon {
+.feature-card:hover .feature-icon, .feature-card:active .feature-icon {
   border-color: rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.06);
   box-shadow: 0 0 16px rgba(255, 255, 255, 0.2);
@@ -1069,7 +1069,7 @@ html, body {
   transition: transform 0.22s cubic-bezier(0.25, 1, 0.5, 1), background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   will-change: transform;
 }
-.number-card:hover {
+.number-card:hover, .number-card:active {
   transform: translateY(-4px) scale(1.02);
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.18);
@@ -1340,6 +1340,12 @@ html, body {
   .hero-stat-label { font-size: 9px; }
   .hero-scroll { display: none; }
   .btn-primary, .btn-secondary { font-size: 12px; padding: 12px 24px; }
+  .input-group input,
+  .input-group select,
+  .input-group textarea,
+  .auth-input-field {
+    font-size: 16px !important;
+  }
 
   .section-whatwedo { padding: 100px 24px 80px; }
   .section-heading { margin-bottom: 48px; }

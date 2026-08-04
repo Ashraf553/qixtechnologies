@@ -253,7 +253,7 @@ export default function App() {
           <span className="nav-brand-text">QIX Technologies</span>
         </div>
 
-        <div className="nav-right nav-links" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+        <div className="nav-right nav-links">
           <a href="#scale">Scale</a>
           
           {/* AUTHORIZATION CONDITIONAL BUTTON OR USER BADGE */}
@@ -516,6 +516,7 @@ export default function App() {
                 <div 
                   className={`research-item ${activeFormation === 1 ? 'active' : ''}`}
                   onMouseEnter={() => setActiveFormation(1)}
+                  onTouchStart={() => setActiveFormation(1)}
                 >
                   <div className="research-num">01</div>
                   <div className="research-item-content">
@@ -529,6 +530,7 @@ export default function App() {
                 <div 
                   className={`research-item ${activeFormation === 2 ? 'active' : ''}`}
                   onMouseEnter={() => setActiveFormation(2)}
+                  onTouchStart={() => setActiveFormation(2)}
                 >
                   <div className="research-num">02</div>
                   <div className="research-item-content">
@@ -542,6 +544,7 @@ export default function App() {
                 <div 
                   className={`research-item ${activeFormation === 3 ? 'active' : ''}`}
                   onMouseEnter={() => setActiveFormation(3)}
+                  onTouchStart={() => setActiveFormation(3)}
                 >
                   <div className="research-num">03</div>
                   <div className="research-item-content">

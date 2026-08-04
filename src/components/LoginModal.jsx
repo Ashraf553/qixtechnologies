@@ -306,6 +306,7 @@ export default function LoginModal({ isOpen, onClose }) {
                     key={index}
                     className={`cube-container ${revealed[index] ? 'revealed' : ''}`}
                     onMouseEnter={() => handleCubeHover(index)}
+                    onTouchStart={() => handleCubeHover(index)}
                     style={{ 
                       animationDelay: `${index * 0.035}s`,
                       '--cube-idx': index
