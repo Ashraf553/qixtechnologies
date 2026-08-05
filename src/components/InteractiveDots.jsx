@@ -53,10 +53,10 @@ export default function InteractiveDots() {
         x: e.clientX,
         y: e.clientY,
         radius: 0,
-        maxRadius: 300,
-        speed: 8.0,
-        force: 80,
-        width: 50,
+        maxRadius: 380,
+        speed: 9.0,
+        force: 110,
+        width: 65,
       });
     };
 
@@ -86,10 +86,10 @@ export default function InteractiveDots() {
           x: touch.clientX,
           y: touch.clientY,
           radius: 0,
-          maxRadius: 220,
-          speed: 7.0,
-          force: 70,
-          width: 40,
+          maxRadius: 280,
+          speed: 8.0,
+          force: 90,
+          width: 50,
         });
       }
     };
