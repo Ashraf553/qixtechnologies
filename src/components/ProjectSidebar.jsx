@@ -135,34 +135,39 @@ export default function ProjectSidebar({ isOpen, onClose }) {
 
   // AI Invoice Estimator
   const generateAIEstimate = (notesText, engineType) => {
-    const text = notesText.toLowerCase();
+    const text = notesText.trim().toLowerCase();
     const tasksList = [];
-    let totalPrice = 1200; // Base platform fee
+    let totalPrice = 12; // Base platform fee
 
-    if (text.includes('design') || text.includes('ui') || text.includes('ux') || text.includes('figma') || text.includes('interface')) {
-      tasksList.push({ name: "Custom Figma UI/UX Design & Prototyping", price: 1100 });
-      totalPrice += 1100;
-    }
-    if (text.includes('database') || text.includes('db') || text.includes('sql') || text.includes('mongo') || text.includes('data') || text.includes('backend')) {
-      tasksList.push({ name: "High-Performance Database Node Cluster Setup", price: 1350 });
-      totalPrice += 1350;
-    }
-    if (text.includes('mobile') || text.includes('app') || text.includes('ios') || text.includes('android') || text.includes('phone')) {
-      tasksList.push({ name: "iOS & Android Cross-Platform Frame Deployment", price: 2400 });
-      totalPrice += 2400;
-    }
-    if (text.includes('secure') || text.includes('security') || text.includes('auth') || text.includes('crypto') || text.includes('login')) {
-      tasksList.push({ name: "Post-Quantum Cryptographic Auth Gateways", price: 1500 });
-      totalPrice += 1500;
-    }
+    if (text.length < 5) {
+      tasksList.push({ name: `Basic Sandbox Allocation (${engineType})`, price: 8 });
+      totalPrice += 8;
+    } else {
+      if (text.includes('design') || text.includes('ui') || text.includes('ux') || text.includes('figma') || text.includes('interface')) {
+        tasksList.push({ name: "Figma UI/UX Design & Prototyping", price: 35 });
+        totalPrice += 35;
+      }
+      if (text.includes('database') || text.includes('db') || text.includes('sql') || text.includes('mongo') || text.includes('data') || text.includes('backend')) {
+        tasksList.push({ name: "High-Performance Database Node Setup", price: 45 });
+        totalPrice += 45;
+      }
+      if (text.includes('mobile') || text.includes('app') || text.includes('ios') || text.includes('android') || text.includes('phone')) {
+        tasksList.push({ name: "Mobile Frame Native Deployment", price: 70 });
+        totalPrice += 70;
+      }
+      if (text.includes('secure') || text.includes('security') || text.includes('auth') || text.includes('crypto') || text.includes('login')) {
+        tasksList.push({ name: "Cryptographic Authorization Gateway", price: 50 });
+        totalPrice += 50;
+      }
 
-    // Default fallbacks to ensure detailed layout
-    if (tasksList.length < 2) {
-      tasksList.push({ name: "Core API Infrastructure & Endpoint Routing", price: 950 });
-      totalPrice += 950;
+      // Default fallbacks if no main components were mentioned
+      if (tasksList.length < 2) {
+        tasksList.push({ name: "Core API Routing & Endpoint Infrastructure", price: 30 });
+        totalPrice += 30;
+      }
+      tasksList.push({ name: `Edge CD Pipeline (${engineType})`, price: 8 });
+      totalPrice += 8;
     }
-    tasksList.push({ name: `Automated Edge CD Pipeline (${engineType})`, price: 650 });
-    totalPrice += 650;
 
     const formattedPrice = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalPrice);
     
@@ -170,7 +175,7 @@ export default function ProjectSidebar({ isOpen, onClose }) {
       tasks: tasksList.map(t => ({ ...t, price: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(t.price) })),
       totalPriceRaw: totalPrice,
       totalPrice: formattedPrice,
-      timeline: totalPrice > 5000 ? "30 Days" : "14 Days"
+      timeline: totalPrice > 120 ? "14 Days" : "7 Days"
     });
   };
 
