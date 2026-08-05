@@ -288,7 +288,7 @@ export default function App() {
         
         <div className="nav-brand-center" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <img className="nav-brand-img" src="/logo.jpg" alt="QIX Logo" />
-          <span className="nav-brand-text">QIX Technologies</span>
+          <span className="nav-brand-text notranslate" translate="no">QIX Technologies</span>
         </div>
 
         <div className="nav-right nav-links">

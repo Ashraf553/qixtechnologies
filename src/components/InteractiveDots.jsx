@@ -154,33 +154,14 @@ export default function InteractiveDots() {
     initDots();
     window.addEventListener('resize', initDots);
 
-    let lastScrollY = window.scrollY;
-    let scrollVelocity = 0;
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const deltaY = currentScrollY - lastScrollY;
-      lastScrollY = currentScrollY;
-      scrollVelocity += deltaY;
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
     let time = 0;
-    const springStrength = 0.08;
-    const damping = 0.81;
+    const springStrength = 0.06;
+    const damping = 0.85;
     const maxRepulsion = 40;
 
     const animate = () => {
       time += 1;
       ctx.clearRect(0, 0, width, height);
-
-      // Apply scroll drag force and decay
-      if (Math.abs(scrollVelocity) > 0.05) {
-        dots.forEach((dot) => {
-          dot.vy -= scrollVelocity * 0.045;
-        });
-        scrollVelocity *= 0.65;
-      }
 
       // Lerp mouse
       if (mouse.targetX === -1000) {
@@ -342,7 +323,6 @@ export default function InteractiveDots() {
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('resize', initDots);
-      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 

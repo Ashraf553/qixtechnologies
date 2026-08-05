@@ -153,7 +153,7 @@ html, body {
   transition: transform 0.3s ease;
 }
 .nav-brand-center:hover {
-  transform: translate(-58%, -50%) scale(1.03);
+  transform: translate(-58%, -50%);
 }
 .nav-brand-img {
   width: 26px;
