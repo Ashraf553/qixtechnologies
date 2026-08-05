@@ -95,35 +95,36 @@ export default function App() {
     const cursorCircle = cursorRef.current;
     const cursorDot = cursorDotRef.current;
 
-    const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
-    const dot = { x: 0, y: 0, targetX: 0, targetY: 0 };
+    const mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
 
     const handleMouseMove = (e) => {
       mouse.targetX = e.clientX;
       mouse.targetY = e.clientY;
-      dot.targetX = e.clientX;
-      dot.targetY = e.clientY;
     };
 
     window.addEventListener('mousemove', handleMouseMove);
 
+    let cursorRafId;
     const quickTick = () => {
-      // Lerp calculations for ultra-smooth organic cursor trailing
-      mouse.x += (mouse.targetX - mouse.x) * 0.12;
-      mouse.y += (mouse.targetY - mouse.y) * 0.12;
-      dot.x += (dot.targetX - dot.x) * 0.45;
-      dot.y += (dot.targetY - dot.y) * 0.45;
+      // Lerp calculations for ultra-smooth organic cursor trailing (perfectly centered)
+      if (mouse.targetX === -1000) {
+        mouse.x += (-1000 - mouse.x) * 0.12;
+        mouse.y += (-1000 - mouse.y) * 0.12;
+      } else {
+        mouse.x += (mouse.targetX - mouse.x) * 0.22; // Snappier trail
+        mouse.y += (mouse.targetY - mouse.y) * 0.22;
+      }
 
       if (cursorCircle) {
-        cursorCircle.style.transform = `translate3d(${mouse.x - 20}px, ${mouse.y - 20}px, 0)`;
+        cursorCircle.style.transform = `translate3d(${mouse.x}px, ${mouse.y}px, 0)`;
       }
       if (cursorDot) {
-        cursorDot.style.transform = `translate3d(${dot.x - 3}px, ${dot.y - 3}px, 0)`;
+        cursorDot.style.transform = `translate3d(${mouse.targetX}px, ${mouse.targetY}px, 0)`;
       }
 
-      requestAnimationFrame(quickTick);
+      cursorRafId = requestAnimationFrame(quickTick);
     };
-    requestAnimationFrame(quickTick);
+    cursorRafId = requestAnimationFrame(quickTick);
 
     // Scroll state tracker for nav blur/solid switch
     const handleScroll = () => {
@@ -235,11 +236,11 @@ export default function App() {
         target.classList.contains('research-item') ||
         target.closest('.research-item')
       ) {
-        cursorCircle?.classList.add('expand');
-        cursorDot?.classList.add('expand');
+        cursorCircle?.classList.add('hovered');
+        cursorDot?.classList.add('hovered');
       } else {
-        cursorCircle?.classList.remove('expand');
-        cursorDot?.classList.remove('expand');
+        cursorCircle?.classList.remove('hovered');
+        cursorDot?.classList.remove('hovered');
       }
     };
 
@@ -249,6 +250,7 @@ export default function App() {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseover', handleMouseOver);
       window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(cursorRafId);
       observer.disconnect();
     };
   }, []);
