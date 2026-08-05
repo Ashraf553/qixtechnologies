@@ -135,22 +135,80 @@ export default function App() {
     };
     window.addEventListener('scroll', handleScroll);
 
-    // Scroll reveal mechanics for services, portfolio, numbers sections
+    // Stacking cards parallax scroll mechanics
     const handleCardsScroll = () => {
-      const reveals = document.querySelectorAll('.reveal');
-      reveals.forEach((element) => {
-        const windowHeight = window.innerHeight;
-        const elementTop = element.getBoundingClientRect().top;
-        const elementVisible = 100;
-        
-        if (elementTop < windowHeight - elementVisible) {
-          element.classList.add('active');
+      if (window.innerWidth < 768) {
+        document.querySelectorAll('.portfolio-card-wrapper').forEach(wrapper => {
+          const card = wrapper.querySelector('.portfolio-card');
+          if (card) {
+            card.style.transform = 'none';
+            card.style.opacity = '1';
+            card.style.filter = 'none';
+          }
+        });
+        return;
+      }
+
+      const wrappers = document.querySelectorAll('.portfolio-card-wrapper');
+      wrappers.forEach((wrapper, index) => {
+        const rect = wrapper.getBoundingClientRect();
+        const stickyTop = 120 + index * 30;
+        const card = wrapper.querySelector('.portfolio-card');
+        if (!card) return;
+
+        if (rect.top <= stickyTop) {
+          const nextWrapper = wrappers[index + 1];
+          if (nextWrapper) {
+            const nextRect = nextWrapper.getBoundingClientRect();
+            const nextStickyTop = 120 + (index + 1) * 30;
+            const distance = nextRect.top - nextStickyTop;
+            
+            const scrollRange = 400;
+            const progress = Math.max(0, Math.min(1, (scrollRange - distance) / scrollRange));
+            
+            const scale = 1 - progress * 0.06;
+            const opacity = 1 - progress * 0.4;
+            const brightness = 1 - progress * 0.45;
+            
+            card.style.transform = `scale(${scale})`;
+            card.style.opacity = `${opacity}`;
+            card.style.filter = `brightness(${brightness})`;
+
+            const image = card.querySelector('.portfolio-card-image img');
+            if (image) {
+              const imageY = -progress * 40;
+              image.style.transform = `scale(1.04) translateY(${imageY}px)`;
+            }
+          } else {
+            card.style.transform = 'scale(1)';
+            card.style.opacity = '1';
+            card.style.filter = 'none';
+            const image = card.querySelector('.portfolio-card-image img');
+            if (image) image.style.transform = 'none';
+          }
+        } else {
+          card.style.transform = 'scale(1)';
+          card.style.opacity = '1';
+          card.style.filter = 'none';
+          const image = card.querySelector('.portfolio-card-image img');
+          if (image) image.style.transform = 'none';
         }
       });
     };
     window.addEventListener('scroll', handleCardsScroll);
-    // Initial call to reveal elements already in view
     setTimeout(handleCardsScroll, 100);
+
+    // Wire up IntersectionObserver for scroll-revealed elements using correct .visible class
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
     // Cursor hover enlarger triggers
     const handleMouseOver = (e) => {
@@ -180,6 +238,7 @@ export default function App() {
       window.removeEventListener('mouseover', handleMouseOver);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('scroll', handleCardsScroll);
+      observer.disconnect();
     };
   }, []);
 
