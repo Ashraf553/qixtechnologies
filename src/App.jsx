@@ -354,26 +354,26 @@ export default function App() {
               </div>
             )}
             <h1 className={`hero-h1 ${animClass}`}>
-              We build software. <br />
-              <span className="thin">Web. App Store. Android.</span>
+              Лучшая веб-студия. <br />
+              <span className="thin">Создаем исключительно красивые сайты.</span>
             </h1>
             
             <div className="hero-row">
               <p className={`hero-sub ${animClass}`}>
-                We design, develop, and launch high-performance websites and custom mobile applications. From sleek interfaces in the App Store and Google Play to cloud scale backends, we handle the technology so you can scale your business.
+                Мы проектируем, разрабатываем и запускаем высокопроизводительные веб-сайты и мобильные приложения. От стильных интерфейсов до масштабируемых облачных решений — мы берем на себя все технологии, чтобы вы могли уверенно развивать свой бизнес.
               </p>
               <div className={`hero-actions ${animClass}`}>
                 <Magnetic>
                   <a href="#services" className="btn-primary">
                     <span className="btn-content-inner">
                       <span className="btn-slide-item">
-                        <span>Our Services</span>
+                        <span>Наши услуги</span>
                         <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M3 8h10M9 4l4 4-4 4" />
                         </svg>
                       </span>
                       <span className="btn-slide-item btn-slide-item-hover">
-                        <span>Our Services</span>
+                        <span>Наши услуги</span>
                         <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M3 8h10M9 4l4 4-4 4" />
                         </svg>
@@ -385,13 +385,13 @@ export default function App() {
                   <a href="#contact" className="btn-secondary">
                     <span className="btn-content-inner">
                       <span className="btn-slide-item">
-                        <span>Get in Touch</span>
+                        <span>Связаться</span>
                         <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M3 8h10M9 4l4 4-4 4" />
                         </svg>
                       </span>
                       <span className="btn-slide-item btn-slide-item-hover">
-                        <span>Get in Touch</span>
+                        <span>Связаться</span>
                         <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M3 8h10M9 4l4 4-4 4" />
                         </svg>
@@ -408,15 +408,15 @@ export default function App() {
             <div className="hero-stats">
               <div className={`hero-stat ${animClass}`}>
                 <span className="hero-stat-val">150+</span>
-                <span className="hero-stat-label">Products Launched</span>
+                <span className="hero-stat-label">Проектов запущено</span>
               </div>
               <div className={`hero-stat ${animClass}`}>
                 <span className="hero-stat-val">99.9%</span>
-                <span className="hero-stat-label">Uptime SLA</span>
+                <span className="hero-stat-label">Время работы SLA</span>
               </div>
               <div className={`hero-stat ${animClass}`}>
-                <span className="hero-stat-val">15M+</span>
-                <span className="hero-stat-label">Active App Users</span>
+                <span className="hero-stat-val">15М+</span>
+                <span className="hero-stat-label">Пользователей</span>
               </div>
             </div>
             <div className={`hero-scroll ${animClass}`}>
