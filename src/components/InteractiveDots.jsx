@@ -166,8 +166,8 @@ export default function InteractiveDots() {
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     let time = 0;
-    const springStrength = 0.045;
-    const damping = 0.88;
+    const springStrength = 0.08;
+    const damping = 0.81;
     const maxRepulsion = 40;
 
     const animate = () => {
@@ -177,9 +177,9 @@ export default function InteractiveDots() {
       // Apply scroll drag force and decay
       if (Math.abs(scrollVelocity) > 0.05) {
         dots.forEach((dot) => {
-          dot.vy -= scrollVelocity * 0.06;
+          dot.vy -= scrollVelocity * 0.045;
         });
-        scrollVelocity *= 0.85;
+        scrollVelocity *= 0.65;
       }
 
       // Lerp mouse

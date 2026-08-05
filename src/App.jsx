@@ -135,6 +135,19 @@ export default function App() {
       }
     };
 
+    // Performance Optimization: Cache card positions to avoid getBoundingClientRect() during scroll
+    let cardTops = [];
+    const updateCardTops = () => {
+      cardTops = Array.from(document.querySelectorAll('.portfolio-card-wrapper')).map(wrapper => {
+        const rect = wrapper.getBoundingClientRect();
+        return window.scrollY + rect.top;
+      });
+    };
+    
+    // Delay initialization to ensure styles and fonts are loaded and layout is stable
+    setTimeout(updateCardTops, 600);
+    window.addEventListener('resize', updateCardTops);
+
     // Stacking cards parallax scroll mechanics
     const handleCardsScroll = () => {
       if (window.innerWidth < 768) {
@@ -150,18 +163,22 @@ export default function App() {
       }
 
       const wrappers = document.querySelectorAll('.portfolio-card-wrapper');
+      const currentScroll = window.scrollY;
+
       wrappers.forEach((wrapper, index) => {
-        const rect = wrapper.getBoundingClientRect();
+        const cardTop = cardTops[index] || (currentScroll + wrapper.getBoundingClientRect().top);
+        const rectTop = cardTop - currentScroll;
         const stickyTop = 120 + index * 30;
         const card = wrapper.querySelector('.portfolio-card');
         if (!card) return;
 
-        if (rect.top <= stickyTop) {
+        if (rectTop <= stickyTop) {
           const nextWrapper = wrappers[index + 1];
           if (nextWrapper) {
-            const nextRect = nextWrapper.getBoundingClientRect();
+            const nextCardTop = cardTops[index + 1] || (currentScroll + nextWrapper.getBoundingClientRect().top);
+            const nextRectTop = nextCardTop - currentScroll;
             const nextStickyTop = 120 + (index + 1) * 30;
-            const distance = nextRect.top - nextStickyTop;
+            const distance = nextRectTop - nextStickyTop;
             
             const scrollRange = 400;
             const progress = Math.max(0, Math.min(1, (scrollRange - distance) / scrollRange));
@@ -250,6 +267,7 @@ export default function App() {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseover', handleMouseOver);
       window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', updateCardTops);
       cancelAnimationFrame(cursorRafId);
       observer.disconnect();
     };
