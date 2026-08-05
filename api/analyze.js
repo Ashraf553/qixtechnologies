@@ -28,26 +28,26 @@ export default async function handler(req, res) {
   try {
     const systemPrompt = `
 You are the QIX Technologies AI Architect based in Tashkent, Uzbekistan.
-Analyze the user's project request:
+Analyze the user's project request honestly and carefully:
 - Project Name: "${projectName}"
 - Engine/Platform: "${projectType}"
 - Requirements Notes: "${projectNotes}"
 
-Your task is to analyze these requirements and return a JSON breakdown of tasks, cost estimates in Uzbek Sums (UZS), and timeline.
+Your task is to analyze these requirements and return a highly customized, honest JSON breakdown of tasks, cost estimates in Uzbek Sums (UZS), and timeline.
 
 CRITICAL CONSTRAINTS:
-1. The total price (sum of all tasks) MUST be strictly between 250,000 UZS and 3,000,000 UZS. Do not exceed 3,000,000 UZS.
-2. Return between 2 and 4 itemized tasks.
-3. The first task must always be a base platform setup fee (e.g. 150,000 UZS to 300,000 UZS).
-4. Task prices must be integers (do not use decimals).
-5. Output ONLY valid JSON in this exact structure, with no markdown tags (like \`\`\`json) and no text outside:
+1. The tasks MUST be directly tailored to the user's specific request. If they mention "самса", "доставка", "3D", "Telegram", the tasks must reflect exactly these things. Do NOT generate generic or identical tasks.
+2. For each task, write a highly descriptive name in Russian that clearly explains WHAT is being implemented and WHY it is required for their specific request (e.g., "Разработка Telegram-бота для заказов самсы" or "Настройка 3D-анимации тандыра на главной").
+3. Assess the complexity honestly. Simple requests should be cheaper; complex requests (e.g., integrations, animations, bots) should cost more, but the total price (sum of all tasks) MUST be strictly between 250,000 UZS and 3,000,000 UZS.
+4. Return between 2 and 4 itemized tasks.
+5. Task prices must be integers (do not use decimals).
+6. Output ONLY valid JSON in this exact structure, with no markdown tags (like \`\`\`json) and no text outside:
 {
   "tasks": [
-    {"name": "Base Platform Setup & Core Logic", "price": 200000},
-    {"name": "Database Integration & Schema Design", "price": 450000},
-    {"name": "Deployment pipeline setup", "price": 100000}
+    {"name": "Конкретная задача 1 (почему и для чего)", "price": 200000},
+    {"name": "Конкретная задача 2 (почему и для чего)", "price": 450000}
   ],
-  "totalPrice": 750000,
+  "totalPrice": 650000,
   "timeline": "7 Days"
 }
 `;
@@ -91,37 +91,37 @@ function getFallbackEstimate(notesText, engineType) {
   let totalPrice = 150000; // Base platform fee (150k UZS)
 
   if (text.length < 5) {
-    tasksList.push({ name: `Basic Sandbox Allocation (${engineType})`, price: 100000 });
+    tasksList.push({ name: `Базовая настройка окружения (${engineType})`, price: 100000 });
     totalPrice += 100000;
   } else {
-    if (text.includes('design') || text.includes('ui') || text.includes('ux') || text.includes('figma') || text.includes('interface')) {
-      tasksList.push({ name: "Figma UI/UX Design & Prototyping", price: 450000 });
+    if (text.includes('самса') || text.includes('доставка')) {
+      tasksList.push({ name: "Разработка модуля заказов и логистики доставки", price: 800000 });
+      totalPrice += 800000;
+    }
+    if (text.includes('bot') || text.includes('бот') || text.includes('telegram')) {
+      tasksList.push({ name: "Создание Telegram-бота для мгновенных уведомлений", price: 650000 });
+      totalPrice += 650000;
+    }
+    if (text.includes('design') || text.includes('ui') || text.includes('figma') || text.includes('дизайн')) {
+      tasksList.push({ name: "Отрисовка UI/UX дизайна интерфейса в Figma", price: 450000 });
       totalPrice += 450000;
     }
-    if (text.includes('database') || text.includes('db') || text.includes('sql') || text.includes('mongo') || text.includes('data') || text.includes('backend')) {
-      tasksList.push({ name: "High-Performance Database Node Setup", price: 600000 });
-      totalPrice += 600000;
-    }
-    if (text.includes('mobile') || text.includes('app') || text.includes('ios') || text.includes('android') || text.includes('phone')) {
-      tasksList.push({ name: "Mobile Frame Native Deployment", price: 900000 });
-      totalPrice += 900000;
-    }
-    if (text.includes('secure') || text.includes('security') || text.includes('auth') || text.includes('crypto') || text.includes('login')) {
-      tasksList.push({ name: "Cryptographic Authorization Gateway", price: 650000 });
-      totalPrice += 650000;
+    if (text.includes('database') || text.includes('бд') || text.includes('sql') || text.includes('база')) {
+      tasksList.push({ name: "Проектирование реляционной базы данных под заказы", price: 500000 });
+      totalPrice += 500000;
     }
 
     if (tasksList.length < 2) {
-      tasksList.push({ name: "Core API Routing & Endpoint Infrastructure", price: 400000 });
+      tasksList.push({ name: "Разработка ядра API и логики приложения", price: 400000 });
       totalPrice += 400000;
     }
-    tasksList.push({ name: `Edge CD Pipeline (${engineType})`, price: 100000 });
-    totalPrice += 100000;
+    tasksList.push({ name: "Деплоймент в облако и тестирование системы", price: 150000 });
+    totalPrice += 150000;
   }
 
   return {
     tasks: tasksList,
     totalPrice,
-    timeline: totalPrice > 1200000 ? "14 Days" : "7 Days"
+    timeline: totalPrice > 1200000 ? "14 дней" : "7 дней"
   };
 }
