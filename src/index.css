@@ -3204,15 +3204,33 @@ html, body {
   -webkit-backdrop-filter: blur(20px);
 }
 
+.checkout-card-preview.humo-theme {
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.45) 0%, rgba(17, 94, 89, 0.3) 100%);
+  border-color: rgba(20, 184, 166, 0.25);
+}
+
+.checkout-card-preview.uzcard-theme {
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.45) 0%, rgba(30, 58, 138, 0.3) 100%);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
 .checkout-card-preview::before {
   content: '';
   position: absolute;
   top: -30%; left: -20%;
   width: 160px; height: 160px;
-  background: rgba(168, 85, 247, 0.25);
+  background: rgba(255, 255, 255, 0.08);
   filter: blur(40px);
   border-radius: 50%;
   pointer-events: none;
+}
+
+.checkout-card-preview.humo-theme::before {
+  background: rgba(20, 184, 166, 0.2);
+}
+
+.checkout-card-preview.uzcard-theme::before {
+  background: rgba(59, 130, 246, 0.2);
 }
 
 .card-preview-chip {
