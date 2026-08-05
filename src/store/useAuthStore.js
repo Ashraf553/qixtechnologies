@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export const AVATARS = [
   { id: 'avatar-1', colors: ['#ff416c', '#ff4b2b'], name: 'Crimson Sunset' },
@@ -14,23 +15,30 @@ export const getAvatarUri = (colors) => {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 };
 
-export const useAuthStore = create((set) => ({
-  user: null,
-  isLoggedIn: false,
-  
-  // Action to log in user with email, name and avatar
-  login: (email, name, avatar) => set({ 
-    isLoggedIn: true, 
-    user: { 
-      email, 
-      name: name,
-      avatar: avatar || getAvatarUri(AVATARS[0].colors)
-    } 
-  }),
-  
-  // Action to log out user
-  logout: () => set({ 
-    isLoggedIn: false, 
-    user: null 
-  })
-}));
+export const useAuthStore = create(
+  persist(
+    (set) => ({
+      user: null,
+      isLoggedIn: false,
+      
+      // Action to log in user with email, name and avatar
+      login: (email, name, avatar) => set({ 
+        isLoggedIn: true, 
+        user: { 
+          email, 
+          name: name,
+          avatar: avatar || getAvatarUri(AVATARS[0].colors)
+        } 
+      }),
+      
+      // Action to log out user
+      logout: () => set({ 
+        isLoggedIn: false, 
+        user: null 
+      })
+    }),
+    {
+      name: 'qix-auth-storage', // key name in localStorage
+    }
+  )
+);
