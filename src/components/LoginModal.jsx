@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore, AVATARS, getAvatarUri } from '../store/useAuthStore';
+import { useLangStore, translations } from '../store/useLangStore';
 
 const PHRASE_LETTERS = "THANKYOUFORCHOOSINGUS";
 const TOTAL_LETTERS = PHRASE_LETTERS.length; // 21 letters
@@ -22,6 +23,10 @@ export default function LoginModal({ isOpen, onClose }) {
   // Interactive mouse tracking positions for 3D tilt & glowing orb
   const [orbPos, setOrbPos] = useState({ x: -1000, y: -1000 });
   const [isHovered, setIsHovered] = useState(false);
+
+  // Language selectors
+  const lang = useLangStore((state) => state.lang);
+  const t = translations[lang];
 
   useEffect(() => {
     if (!isOpen) {
@@ -62,7 +67,6 @@ export default function LoginModal({ isOpen, onClose }) {
     
     setOrbPos({ x, y });
 
-    // Calculate grid 3D tilt angles based on cursor distance from panel center
     const gridX = e.clientX - rect.left - rect.width / 2;
     const gridY = e.clientY - rect.top - rect.height / 2;
     const tiltX = (gridY / (rect.height / 2)) * -9; // Tilt up to 9 degrees
@@ -94,25 +98,24 @@ export default function LoginModal({ isOpen, onClose }) {
 
     // Validations
     if (isSignUp && !name.trim()) {
-      setError('Please enter your name.');
+      setError(lang === 'en' ? 'Please enter your name.' : lang === 'uz' ? 'Ismingizni kiriting.' : 'Пожалуйста, введите имя.');
       return;
     }
     if (!email || !password) {
-      setError('Please fill in all fields.');
+      setError(lang === 'en' ? 'Please fill in all fields.' : lang === 'uz' ? 'Barcha maydonlarni to\'ldiring.' : 'Пожалуйста, заполните все поля.');
       return;
     }
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setError('Please enter a valid email address.');
+      setError(lang === 'en' ? 'Please enter a valid email.' : lang === 'uz' ? 'Email noto\'g\'ri.' : 'Введите корректный email.');
       return;
     }
     if (password.length < 5) {
-      setError('Password must be at least 5 characters long.');
+      setError(lang === 'en' ? 'Password must be at least 5 characters.' : lang === 'uz' ? 'Parol kamida 5 ta belgi bo\'lishi shart.' : 'Пароль должен содержать не менее 5 символов.');
       return;
     }
 
     setIsLoading(true);
 
-    // Mock API call to simulate authorization
     setTimeout(() => {
       setIsLoading(false);
       setSuccess(true);
@@ -153,12 +156,12 @@ export default function LoginModal({ isOpen, onClose }) {
                 <div className="auth-logo-area">
                   <span className="auth-decor-bullet">✦</span>
                   <h3 className="auth-panel-title">
-                    {isSignUp ? 'CREATE ACCOUNT' : 'ESTABLISH SESSION'}
+                    {isSignUp ? t.createAccount.toUpperCase() : (lang === 'en' ? 'ESTABLISH SESSION' : lang === 'uz' ? 'TIZIMGA KIRISH' : 'УСТАНОВИТЬ СЕССИЮ')}
                   </h3>
                   <p className="auth-panel-subtitle">
                     {isSignUp 
-                      ? 'Register your developer identity to access QIX nodes.' 
-                      : 'Connect with your credentials to resume your session.'}
+                      ? (lang === 'en' ? 'Register your developer identity to access QIX nodes.' : lang === 'uz' ? 'QIX tugunlariga kirish uchun dasturchi profilingizni yarating.' : 'Зарегистрируйте профиль разработчика для доступа к узлам QIX.')
+                      : (lang === 'en' ? 'Connect with your credentials to resume your session.' : lang === 'uz' ? 'Sessiyangizni tiklash uchun hisob ma\'lumotlaringizni kiriting.' : 'Войдите под своими учетными данными, чтобы возобновить сессию.')}
                   </p>
                 </div>
 
@@ -167,7 +170,7 @@ export default function LoginModal({ isOpen, onClose }) {
                   
                   {isSignUp && (
                     <div className="auth-input-group">
-                      <label className="auth-input-label">Full Name</label>
+                      <label className="auth-input-label">{t.fullName}</label>
                       <input 
                         type="text" 
                         className="auth-input-field" 
@@ -180,7 +183,7 @@ export default function LoginModal({ isOpen, onClose }) {
                   )}
 
                   <div className="auth-input-group">
-                    <label className="auth-input-label">User Email</label>
+                    <label className="auth-input-label">{t.emailAddr}</label>
                     <input 
                       type="email" 
                       className="auth-input-field" 
@@ -194,7 +197,7 @@ export default function LoginModal({ isOpen, onClose }) {
                   {isSignUp && (
                     /* AVATAR SELECTION COMPONENT */
                     <div className="auth-input-group">
-                      <label className="auth-input-label">Select Avatar Identity</label>
+                      <label className="auth-input-label">{t.chooseAvatar}</label>
                       <div className="avatar-selection-grid">
                         {AVATARS.map((avatar) => {
                           const gradientStyle = {
@@ -218,7 +221,7 @@ export default function LoginModal({ isOpen, onClose }) {
                   )}
 
                   <div className="auth-input-group">
-                    <label className="auth-input-label">Password</label>
+                    <label className="auth-input-label">{t.password}</label>
                     <input 
                       type="password" 
                       className="auth-input-field" 
@@ -233,13 +236,17 @@ export default function LoginModal({ isOpen, onClose }) {
                     {isLoading ? (
                       <span className="auth-spinner" />
                     ) : (
-                      isSignUp ? 'Create Profile & Connect' : 'Authorize Connection'
+                      isSignUp 
+                        ? (lang === 'en' ? 'Create Profile & Connect' : lang === 'uz' ? 'Profil yaratish va ulanish' : 'Создать профиль и подключиться') 
+                        : (lang === 'en' ? 'Authorize Connection' : lang === 'uz' ? 'Ulanishni tasdiqlash' : 'Авторизовать подключение')
                     )}
                   </button>
 
                   <div className="auth-switch-prompt">
                     <span>
-                      {isSignUp ? 'Already registered? ' : 'New developer? '}
+                      {isSignUp 
+                        ? (lang === 'en' ? 'Already registered? ' : lang === 'uz' ? 'Ro\'yxatdan o\'tganmisiz? ' : 'Уже зарегистрированы? ') 
+                        : (lang === 'en' ? 'New developer? ' : lang === 'uz' ? 'Yangi dasturchimisiz? ' : 'Новый разработчик? ')}
                     </span>
                     <button 
                       type="button" 
@@ -250,7 +257,7 @@ export default function LoginModal({ isOpen, onClose }) {
                       }}
                       disabled={isLoading}
                     >
-                      {isSignUp ? 'Log In' : 'Sign Up'}
+                      {isSignUp ? t.login : (lang === 'en' ? 'Sign Up' : lang === 'uz' ? 'Ro\'yxatdan o\'tish' : 'Регистрация')}
                     </button>
                   </div>
                 </form>
@@ -262,12 +269,12 @@ export default function LoginModal({ isOpen, onClose }) {
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
-                <h3 className="auth-panel-title" style={{ marginTop: '24px' }}>ACCESS GRANTED</h3>
+                <h3 className="auth-panel-title" style={{ marginTop: '24px' }}>{t.accessGranted}</h3>
                 <p className="auth-panel-subtitle" style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>
-                  Welcome back, {isSignUp ? name.trim() : email.split('@')[0]}
+                  {lang === 'en' ? 'Welcome back' : lang === 'uz' ? 'Xush kelibsiz' : 'Добро пожаловать обратно'}, {isSignUp ? name.trim() : email.split('@')[0]}
                 </p>
                 <p className="auth-panel-subtitle" style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.3)', marginTop: '8px' }}>
-                  Decrypting user credentials & authorization keys...
+                  {lang === 'en' ? 'Decrypting user credentials & authorization keys...' : lang === 'uz' ? 'Foydalanuvchi ma\'lumotlari va avtorizatsiya kalitlari ochilmoqda...' : 'Дешифрование данных пользователя и ключей авторизации...'}
                 </p>
               </div>
             )}
@@ -292,11 +299,13 @@ export default function LoginModal({ isOpen, onClose }) {
           />
 
           <div className="auth-game-container">
-            <h4 className="game-title">DEVELOPER AUTHENTICATION GRID</h4>
+            <h4 className="game-title">
+              {lang === 'en' ? 'DEVELOPER AUTHENTICATION GRID' : lang === 'uz' ? 'DASTURCHI AVTORIZATSIYA TO\'RI' : 'СЕТКА АВТОРИЗАЦИИ РАЗРАБОТЧИКА'}
+            </h4>
             <p className="game-subtitle">
               {gameWon 
-                ? 'Grid fully decrypted. Secure channel verified!' 
-                : `Hover your mouse over the cybernetic cubes to decrypt the access key. (${remainingLetters} cubes remaining)`}
+                ? (lang === 'en' ? 'Grid fully decrypted. Secure channel verified!' : lang === 'uz' ? 'Tarmoq to\'liq ochildi. Xavfsiz kanal tasdiqlandi!' : 'Сетка успешно расшифрована. Безопасный канал подтвержден!') 
+                : (lang === 'en' ? `Hover your mouse over the cybernetic cubes to decrypt the access key. (${remainingLetters} cubes remaining)` : lang === 'uz' ? `Kirish kalitini ochish uchun kiber kubiklar ustiga kursorni olib boring. (${remainingLetters} ta kubik qoldi)` : `Наведите курсор на кибернетические кубы, чтобы расшифровать ключ доступа. (Осталось кубов: ${remainingLetters})`)}
             </p>
 
             <div className={`cubes-grid-matrix ${gameWon ? 'won-glow' : ''}`}>

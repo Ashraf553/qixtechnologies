@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuthStore, AVATARS, getAvatarUri } from '../store/useAuthStore';
+import { useLangStore, translations } from '../store/useLangStore';
 
 export default function ProjectSidebar({ isOpen, onClose }) {
   const [step, setStep] = useState(1); 
@@ -26,6 +27,10 @@ export default function ProjectSidebar({ isOpen, onClose }) {
   const [senderInfo, setSenderInfo] = useState(''); // sender card or phone number
   const [transactionId, setTransactionId] = useState(''); // Click/Payme/Uzum receipt transaction ID
   const [isCopied, setIsCopied] = useState(false);
+
+  // Language selectors
+  const lang = useLangStore((state) => state.lang);
+  const t = translations[lang];
 
   // Auth store selectors
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
@@ -76,15 +81,35 @@ export default function ProjectSidebar({ isOpen, onClose }) {
   useEffect(() => {
     if (step === 'ai_analysis') {
       setAnalysisLogs([]);
-      const logs = [
-        "Initializing QIX Intelligence Engine...",
-        "Parsing architectural description notes...",
-        "Scanning specifications for core components...",
-        `Keywords matched for [${projectType}] node...`,
-        "Running deep workload analysis on edge cluster...",
-        "Compiling microservices and compute resource cost...",
-        "AI Analysis complete! Generating invoice..."
-      ];
+      const logs = {
+        en: [
+          "Initializing QIX Intelligence Engine...",
+          "Parsing architectural description notes...",
+          "Scanning specifications for core components...",
+          `Keywords matched for [${projectType}] node...`,
+          "Running deep workload analysis on edge cluster...",
+          "Compiling microservices and compute resource cost...",
+          "AI Analysis complete! Generating invoice..."
+        ],
+        ru: [
+          "Инициализация интеллектуального движка QIX...",
+          "Парсинг примечаний по архитектуре проекта...",
+          "Сканирование спецификаций для ключевых компонентов...",
+          `Ключевые слова сопоставлены для узла [${projectType}]...`,
+          "Глубокий анализ нагрузок на пограничный кластер...",
+          "Компиляция стоимости микросервисов и ресурсов...",
+          "Анализ завершен! Создание сметы..."
+        ],
+        uz: [
+          "QIX sun'iy intellekt tizimi yuklanmoqda...",
+          "Loyiha arxitekturasi tahlil qilinmoqda...",
+          "Asosiy komponentlar spetsifikatsiyasi o'rganilmoqda...",
+          `[${projectType}] tuguni uchun kalit so'zlar mos keldi...`,
+          "Klasterdagi yuklamaning chuqur tahlili boshlandi...",
+          "Mikroxizmatlar va resurslar narxi hisoblanmoqda...",
+          "Tahlil yakunlandi! Smeta shakllantirilmoqda..."
+        ]
+      }[lang];
       
       let index = 0;
       const interval = setInterval(() => {
@@ -93,7 +118,6 @@ export default function ProjectSidebar({ isOpen, onClose }) {
           index++;
         } else {
           clearInterval(interval);
-          // Wait for the invoice data to be available (fetched from Gemini AI API) before proceeding
           const checkInvoiceInterval = setInterval(() => {
             if (estimatedInvoice) {
               clearInterval(checkInvoiceInterval);
@@ -105,20 +129,38 @@ export default function ProjectSidebar({ isOpen, onClose }) {
       
       return () => clearInterval(interval);
     }
-  }, [step, projectType, estimatedInvoice]);
+  }, [step, projectType, estimatedInvoice, lang]);
 
   // Simulating secure ledger payment logs
   useEffect(() => {
     if (step === 'processing_payment') {
       setPaymentLogs([]);
-      const logs = [
-        "Connecting to secure payment gateway...",
-        "Locating transaction in Humo/Uzcard P2P ledger...",
-        "Verifying transfer reference ID with Click/Payme...",
-        "Confirming deposit to QIX Technologies vault...",
-        "Payment authorized. Transmitting invoice copy...",
-        "Initializing Sandbox container deploy context..."
-      ];
+      const logs = {
+        en: [
+          "Connecting to secure payment gateway...",
+          "Locating transaction in Humo/Uzcard P2P ledger...",
+          "Verifying transfer reference ID with Click/Payme...",
+          "Confirming deposit to QIX Technologies vault...",
+          "Payment authorized. Transmitting invoice copy...",
+          "Initializing Sandbox container deploy context..."
+        ],
+        ru: [
+          "Подключение к шлюзу авторизации платежей...",
+          "Поиск транзакции в реестре Humo/Uzcard...",
+          "Проверка ID перевода в базе Click/Payme...",
+          "Подтверждение зачисления на счет QIX Technologies...",
+          "Платеж авторизован. Отправка копии чека...",
+          "Инициализация контейнера песочницы..."
+        ],
+        uz: [
+          "To'lov shlyuziga ulanish o'rnatilmoqda...",
+          "Tranzaksiyani Humo/Uzcard reestridan izlash...",
+          "Click/Payme bazasida o'tkazma ID-sini tekshirish...",
+          "QIX Technologies hisobiga pul kelganini tasdiqlash...",
+          "To'lov tasdiqlandi. Elektron chekni yuborish...",
+          "Loyiha konteyneri ishga tushirilmoqda..."
+        ]
+      }[lang];
 
       let index = 0;
       const interval = setInterval(() => {
@@ -135,13 +177,13 @@ export default function ProjectSidebar({ isOpen, onClose }) {
 
       return () => clearInterval(interval);
     }
-  }, [step]);
+  }, [step, lang]);
 
   // Local fallback estimator if AI API is offline or not configured (UZS pricing)
   const generateFallbackEstimate = (notesText, engineType) => {
     const text = notesText.trim().toLowerCase();
     const tasksList = [];
-    let totalPrice = 150000; // Base platform fee (150,000 UZS)
+    let totalPrice = 150000; 
 
     if (text.length < 5) {
       tasksList.push({ name: `Basic Sandbox Allocation (${engineType})`, price: 100000 });
@@ -164,7 +206,6 @@ export default function ProjectSidebar({ isOpen, onClose }) {
         totalPrice += 650000;
       }
 
-      // Default fallbacks if no main components were mentioned
       if (tasksList.length < 2) {
         tasksList.push({ name: "Core API Routing & Endpoint Infrastructure", price: 400000 });
         totalPrice += 400000;
@@ -195,20 +236,20 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     const newErrors = {};
 
     if (!name.trim()) {
-      newErrors.name = 'Full name is required';
+      newErrors.name = lang === 'en' ? 'Full name is required' : lang === 'uz' ? 'To\'liq ism kiritilishi shart' : 'Имя обязательно';
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
-      newErrors.email = 'Email address is required';
+      newErrors.email = lang === 'en' ? 'Email is required' : lang === 'uz' ? 'Email kiritilishi shart' : 'Email обязателен';
     } else if (!emailRegex.test(email)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = lang === 'en' ? 'Invalid email format' : lang === 'uz' ? 'Email formati noto\'g\'ri' : 'Неверный формат email';
     }
 
     if (!password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = lang === 'en' ? 'Password is required' : lang === 'uz' ? 'Parol kiritilishi shart' : 'Пароль обязателен';
     } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = lang === 'en' ? 'At least 6 characters' : lang === 'uz' ? 'Kamida 6 ta belgi' : 'Не менее 6 символов';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -218,21 +259,20 @@ export default function ProjectSidebar({ isOpen, onClose }) {
 
     setErrors({});
     setStep(2);
-    setLoadingMessage('Connecting to secure auth gateway...');
+    setLoadingMessage(t.connectingAuth);
 
     setTimeout(() => {
-      setLoadingMessage('Creating secure developer profile...');
+      setLoadingMessage(t.creatingProfile);
     }, 600);
 
     setTimeout(() => {
-      setLoadingMessage('Syncing custom avatar identity...');
+      setLoadingMessage(t.syncingAvatar);
     }, 1200);
 
     setTimeout(() => {
       const avatarObj = AVATARS.find(a => a.id === selectedAvatar) || AVATARS[0];
       const avatarUri = getAvatarUri(avatarObj.colors);
       
-      // Update global auth store
       login(email, name.trim(), avatarUri);
       
       setStep(3);
@@ -245,7 +285,7 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     const newErrors = {};
 
     if (!projectName.trim()) {
-      newErrors.projectName = 'Project name is required';
+      newErrors.projectName = lang === 'en' ? 'Project name is required' : lang === 'uz' ? 'Loyiha nomi kiritilishi shart' : 'Имя проекта обязательно';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -257,7 +297,6 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     setStep('ai_analysis');
     setEstimatedInvoice(null);
 
-    // Call the serverless function to invoke Google Gemini AI (UZS pricing)
     fetch('/api/analyze', {
       method: 'POST',
       headers: {
@@ -271,7 +310,6 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     })
     .then(res => res.json())
     .then(data => {
-      // Map currency format in UZS
       const tasksFormatted = data.tasks.map(t => {
         let priceStr = t.price;
         if (typeof t.price === 'number') {
@@ -294,7 +332,6 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     })
     .catch(err => {
       console.error("AI Analysis API failed, using fallback:", err);
-      // Fallback local estimation
       generateFallbackEstimate(projectNotes, projectType);
     });
   };
@@ -305,10 +342,10 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     const newErrors = {};
 
     if (!senderInfo.trim()) {
-      newErrors.senderInfo = 'Enter your card or phone number';
+      newErrors.senderInfo = lang === 'en' ? 'Enter sender info' : lang === 'uz' ? 'Yuboruvchi ma\'lumotini kiriting' : 'Введите данные отправителя';
     }
     if (!transactionId.trim()) {
-      newErrors.transactionId = 'Enter Click/Payme transaction receipt ID';
+      newErrors.transactionId = lang === 'en' ? 'Enter receipt ID' : lang === 'uz' ? 'Chek kodi kiritilishi shart' : 'Введите код чека';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -321,7 +358,6 @@ export default function ProjectSidebar({ isOpen, onClose }) {
 
     const invoiceSummaryText = estimatedInvoice.tasks.map(t => `${t.name}: ${t.price}`).join(', ');
 
-    // Dispatch the project and payment verification details to Web3Forms
     fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       headers: {
@@ -348,7 +384,6 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     .catch(err => console.error('Failed to dispatch payment notification:', err));
   };
 
-  // Merchant Humo & Uzcard numbers
   const MERCHANT_HUMO = '9860 1201 5567 4821';
   const MERCHANT_UZCARD = '8600 1402 7839 9924';
   const activeMerchantCard = paymentMethod === 'humo' ? MERCHANT_HUMO : MERCHANT_UZCARD;
@@ -359,14 +394,12 @@ export default function ProjectSidebar({ isOpen, onClose }) {
         ref={sidebarRef} 
         className={`project-sidebar ${isOpen ? 'open' : ''}`}
       >
-        {/* Close button */}
         <button className="project-sidebar-close" onClick={onClose} aria-label="Close sidebar">
           <svg viewBox="0 0 24 24" width="24" height="24">
             <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
 
-        {/* SIDEBAR MAIN CONTENT */}
         <div className="project-sidebar-inner">
           
           {/* STEP 1: AUTH OR PROJECT FORM */}
@@ -377,15 +410,15 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                 <div className="sidebar-step-container">
                   <div className="sidebar-decor-icon">✦</div>
                   <h3 className="sidebar-title font-instrument">
-                    Establish Identity
+                    {t.establishIdentity}
                   </h3>
                   <p className="sidebar-subtitle">
-                    Create your developer profile and choose an avatar to authorize secure connections.
+                    {t.authSubtitle}
                   </p>
 
                   <form onSubmit={handleSignUpSubmit} className="sidebar-form">
                     <div className="input-group">
-                      <label htmlFor="auth-name">Full Name</label>
+                      <label htmlFor="auth-name">{t.fullName}</label>
                       <input 
                         type="text" 
                         id="auth-name" 
@@ -398,7 +431,7 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     </div>
 
                     <div className="input-group">
-                      <label htmlFor="auth-email">Email Address</label>
+                      <label htmlFor="auth-email">{t.emailAddr}</label>
                       <input 
                         type="email" 
                         id="auth-email" 
@@ -412,7 +445,7 @@ export default function ProjectSidebar({ isOpen, onClose }) {
 
                     {/* AVATAR SELECTOR GRID */}
                     <div className="input-group">
-                      <label>Choose Avatar Identity</label>
+                      <label>{t.chooseAvatar}</label>
                       <div className="avatar-selection-grid" style={{ marginTop: '8px', marginBottom: '8px' }}>
                         {AVATARS.map((avatar) => {
                           const gradientStyle = {
@@ -434,7 +467,7 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     </div>
 
                     <div className="input-group">
-                      <label htmlFor="auth-pass">Password</label>
+                      <label htmlFor="auth-pass">{t.password}</label>
                       <input 
                         type="password" 
                         id="auth-pass" 
@@ -449,13 +482,13 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     <button type="submit" className="sidebar-submit-btn">
                       <span className="btn-content-inner">
                         <span className="btn-slide-item">
-                          <span>Create Account</span>
+                          <span>{t.createAccount}</span>
                           <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M3 8h10M9 4l4 4-4 4" />
                           </svg>
                         </span>
                         <span className="btn-slide-item btn-slide-item-hover">
-                          <span>Create Account</span>
+                          <span>{t.createAccount}</span>
                           <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M3 8h10M9 4l4 4-4 4" />
                           </svg>
@@ -476,15 +509,15 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                   </div>
                   
                   <h3 className="sidebar-title font-instrument" style={{ marginTop: '20px' }}>
-                    New Workspace
+                    {t.newWorkspace}
                   </h3>
                   <p className="sidebar-subtitle">
-                    Опишите требования к проекту в Ташкенте. Наш ИИ проанализирует задачу и выставит чек в узбекских сумах (UZS).
+                    {t.workspaceSubtitle}
                   </p>
 
                   <form onSubmit={handleProjectSubmit} className="sidebar-form">
                     <div className="input-group">
-                      <label htmlFor="proj-name">Workspace Name</label>
+                      <label htmlFor="proj-name">{t.workspaceName}</label>
                       <input 
                         type="text" 
                         id="proj-name" 
@@ -497,7 +530,7 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     </div>
 
                     <div className="input-group">
-                      <label htmlFor="proj-type">Environment Engine</label>
+                      <label htmlFor="proj-type">{t.envEngine}</label>
                       <select 
                         id="proj-type" 
                         value={projectType}
@@ -522,10 +555,10 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     </div>
 
                     <div className="input-group">
-                      <label htmlFor="proj-notes">Project Requirements (AI Analysis)</label>
+                      <label htmlFor="proj-notes">{t.projRequirements}</label>
                       <textarea 
                         id="proj-notes" 
-                        placeholder="Пример: Нужен дизайн в Figma, база данных MongoDB, и деплой проекта..." 
+                        placeholder={lang === 'en' ? 'Example: I need Figma UI/UX, MongoDB, and deployment pipeline...' : lang === 'uz' ? 'Namuna: Figma UI/UX dizayn, MongoDB va deploy quvuri kerak...' : 'Пример: Нужен дизайн в Figma, база данных MongoDB, и деплой проекта...'} 
                         rows="4"
                         value={projectNotes}
                         onChange={(e) => setProjectNotes(e.target.value)}
@@ -547,13 +580,13 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     <button type="submit" className="sidebar-submit-btn" style={{ marginTop: '16px' }}>
                       <span className="btn-content-inner">
                         <span className="btn-slide-item">
-                          <span>Analyze Requirements</span>
+                          <span>{t.analyzeReqs}</span>
                           <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M3 8h10M9 4l4 4-4 4" />
                           </svg>
                         </span>
                         <span className="btn-slide-item btn-slide-item-hover">
-                          <span>Analyze Requirements</span>
+                          <span>{t.analyzeReqs}</span>
                           <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M3 8h10M9 4l4 4-4 4" />
                           </svg>
@@ -569,8 +602,8 @@ export default function ProjectSidebar({ isOpen, onClose }) {
           {/* STEP: AI ANALYSIS RADAR */}
           {step === 'ai_analysis' && (
             <div className="sidebar-step-container">
-              <h3 className="sidebar-title font-instrument">Neural Assessment</h3>
-              <p className="sidebar-subtitle">ИИ анализирует требования и калькулирует стоимость в узбекских сумах.</p>
+              <h3 className="sidebar-title font-instrument">{t.neuralAssessment}</h3>
+              <p className="sidebar-subtitle">{t.radarSubtitle}</p>
               
               <div className="ai-analysis-radar">
                 <div className="radar-ring" />
@@ -592,23 +625,23 @@ export default function ProjectSidebar({ isOpen, onClose }) {
           {/* STEP: INVOICE GENERATED */}
           {step === 'invoice' && estimatedInvoice && (
             <div className="sidebar-step-container">
-              <h3 className="sidebar-title font-instrument">Смета проекта</h3>
-              <p className="sidebar-subtitle">Результаты анализа задач и расчет стоимости в сумах.</p>
+              <h3 className="sidebar-title font-instrument">{t.aiCostBreakdown}</h3>
+              <p className="sidebar-subtitle">{t.aiSubtitle}</p>
 
               <div className="invoice-container">
                 <div className="invoice-header-row">
                   <div>
-                    <span className="invoice-label">Project Target</span>
+                    <span className="invoice-label">{t.projectTarget}</span>
                     <div className="invoice-val">{projectName}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <span className="invoice-label">Timeline</span>
+                    <span className="invoice-label">{t.timeline}</span>
                     <div className="invoice-val">{estimatedInvoice.timeline}</div>
                   </div>
                 </div>
 
                 <div className="invoice-task-list">
-                  <span className="invoice-label">Смета по задачам</span>
+                  <span className="invoice-label">{t.itemizedTasks}</span>
                   {estimatedInvoice.tasks.map((task, idx) => (
                     <div key={idx} className="invoice-task-item">
                       <span className="invoice-task-name">{task.name}</span>
@@ -619,8 +652,8 @@ export default function ProjectSidebar({ isOpen, onClose }) {
 
                 <div className="invoice-total-row">
                   <div>
-                    <span className="invoice-label">Итого к оплате</span>
-                    <p style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.4)' }}>Комиссия 0%</p>
+                    <span className="invoice-label">{t.invoicedTotal}</span>
+                    <p style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.4)' }}>{lang === 'en' ? 'Commission 0%' : lang === 'uz' ? 'Komissiya 0%' : 'Комиссия 0%'}</p>
                   </div>
                   <div className="invoice-total-price">{estimatedInvoice.totalPrice}</div>
                 </div>
@@ -632,13 +665,13 @@ export default function ProjectSidebar({ isOpen, onClose }) {
               >
                 <span className="btn-content-inner">
                   <span className="btn-slide-item">
-                    <span>Перейти к оплате</span>
+                    <span>{t.proceedCheckout}</span>
                     <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M3 8h10M9 4l4 4-4 4" />
                     </svg>
                   </span>
                   <span className="btn-slide-item btn-slide-item-hover">
-                    <span>Перейти к оплате</span>
+                    <span>{t.proceedCheckout}</span>
                     <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M3 8h10M9 4l4 4-4 4" />
                     </svg>
@@ -653,7 +686,9 @@ export default function ProjectSidebar({ isOpen, onClose }) {
             <div className="sidebar-step-container">
               <h3 className="sidebar-title font-instrument">Humo / Uzcard P2P</h3>
               <p className="sidebar-subtitle" style={{ marginBottom: '16px' }}>
-                Переведите {estimatedInvoice.totalPrice} на карту ниже через Click/Payme и вставьте код чека для подтверждения.
+                {lang === 'en' ? 'Transfer ' : lang === 'uz' ? 'O\'tkazing: ' : 'Переведите '}
+                <strong>{estimatedInvoice.totalPrice}</strong>
+                {lang === 'en' ? ' to the card below via local mobile banking (Humo/Uzcard) and paste your transaction receipt code.' : lang === 'uz' ? ' quyidagi kartaga va tasdiqlash uchun chek ID-sini kiriting.' : ' на карту ниже через Click/Payme и вставьте код чека для подтверждения.'}
               </p>
 
               {/* PAYMENT METHOD TABS */}
@@ -712,11 +747,15 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                 
                 <div className="card-preview-bottom">
                   <div>
-                    <div className="card-preview-holder">Получатель</div>
+                    <div className="card-preview-holder">
+                      {lang === 'en' ? 'Recipient' : lang === 'uz' ? 'Qabul qiluvchi' : 'Получатель'}
+                    </div>
                     <div style={{ fontSize: '13px', fontWeight: '600' }}>ASHRAF ASKAROV</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div className="card-preview-holder">Валюта</div>
+                    <div className="card-preview-holder">
+                      {lang === 'en' ? 'Currency' : lang === 'uz' ? 'Valyuta' : 'Валюта'}
+                    </div>
                     <div className="card-preview-expiry" style={{ fontSize: '12px', fontWeight: '700' }}>UZS (so'm)</div>
                   </div>
                 </div>
@@ -725,11 +764,11 @@ export default function ProjectSidebar({ isOpen, onClose }) {
               {/* P2P VERIFICATION FORM */}
               <form onSubmit={handlePaymentSubmit} className="sidebar-form">
                 <div className="input-group">
-                  <label htmlFor="p2p-sender">Ваша карта или телефон (Отправитель)</label>
+                  <label htmlFor="p2p-sender">{t.p2pSender}</label>
                   <input 
                     type="text" 
                     id="p2p-sender" 
-                    placeholder="9860 •••• •••• •••• или +998..."
+                    placeholder={lang === 'en' ? '9860 •••• •••• •••• or phone number' : lang === 'uz' ? '9860 •••• •••• •••• yoki telefon' : '9860 •••• •••• •••• или +998...'}
                     value={senderInfo}
                     onChange={(e) => setSenderInfo(e.target.value)}
                     className={errors.senderInfo ? 'input-error' : ''}
@@ -738,11 +777,11 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                 </div>
 
                 <div className="input-group">
-                  <label htmlFor="p2p-receipt">ID транзакции / Код чека (Click / Payme)</label>
+                  <label htmlFor="p2p-receipt">{t.p2pReceipt}</label>
                   <input 
                     type="text" 
                     id="p2p-receipt" 
-                    placeholder="Пример: 582914839"
+                    placeholder={lang === 'en' ? 'Example: 582914839' : lang === 'uz' ? 'Namuna: 582914839' : 'Пример: 582914839'}
                     value={transactionId}
                     onChange={(e) => setTransactionId(e.target.value)}
                     className={errors.transactionId ? 'input-error' : ''}
@@ -753,13 +792,13 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                 <button type="submit" className="sidebar-submit-btn" style={{ marginTop: '16px' }}>
                   <span className="btn-content-inner">
                     <span className="btn-slide-item">
-                      <span>Подтвердить оплату</span>
+                      <span>{t.confirmPayment}</span>
                       <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M3 8h10M9 4l4 4-4 4" />
                       </svg>
                     </span>
                     <span className="btn-slide-item btn-slide-item-hover">
-                      <span>Подтвердить оплату</span>
+                      <span>{t.confirmPayment}</span>
                       <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M3 8h10M9 4l4 4-4 4" />
                       </svg>
@@ -773,8 +812,12 @@ export default function ProjectSidebar({ isOpen, onClose }) {
           {/* STEP: PROCESSING PAYMENT */}
           {step === 'processing_payment' && (
             <div className="sidebar-step-container">
-              <h3 className="sidebar-title font-instrument">Payment Transfer</h3>
-              <p className="sidebar-subtitle">Проверка P2P транзакции в реестре Click/Payme. Пожалуйста, подождите.</p>
+              <h3 className="sidebar-title font-instrument">
+                {lang === 'en' ? 'Payment Verification' : lang === 'uz' ? 'To\'lovni tekshirish' : 'Проверка платежа'}
+              </h3>
+              <p className="sidebar-subtitle">
+                {lang === 'en' ? 'Verifying your P2P receipt in Click/Payme network registry...' : lang === 'uz' ? 'Tranzaksiyani Click/Payme tarmog\'ida tekshirmoqdamiz...' : 'Проверка P2P транзакции в реестре Click/Payme. Пожалуйста, подождите.'}
+              </p>
               
               <div className="sidebar-loading-container" style={{ margin: '16px 0 32px' }}>
                 <div className="loading-spinner-wrap">
@@ -801,7 +844,9 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                 <div className="pulse-loader-ring" />
                 <div className="pulse-loader-core" />
               </div>
-              <h4 className="loading-title">Establishing Connection</h4>
+              <h4 className="loading-title">
+                {lang === 'en' ? 'Establishing Connection' : lang === 'uz' ? 'Ulanish o\'rnatilmoqda' : 'Установка соединения'}
+              </h4>
               <p className="loading-subtitle">{loadingMessage}</p>
             </div>
           )}
@@ -818,10 +863,10 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     </svg>
                   </div>
                   <h3 className="sidebar-title font-instrument" style={{ marginTop: '24px' }}>
-                    Workspace Active!
+                    {t.workspaceActive}
                   </h3>
                   <p className="sidebar-subtitle">
-                    Транзакция подтверждена. Электронный чек отправлен на ваш e-mail.
+                    {t.receiptEmailed}
                   </p>
                   
                   {estimatedInvoice && (
@@ -835,24 +880,24 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                         <strong>{projectType}</strong>
                       </div>
                       <div className="success-details-row">
-                        <span>Сумма перевода:</span>
+                        <span>{t.amountPaid}</span>
                         <strong style={{ color: '#22c55e', fontFamily: 'monospace' }}>{estimatedInvoice.totalPrice}</strong>
                       </div>
                       <div className="success-details-row">
-                        <span>Метод:</span>
+                        <span>{t.method}</span>
                         <strong>P2P ({paymentMethod.toUpperCase()})</strong>
                       </div>
                       <div className="success-details-row">
-                        <span>Статус:</span>
-                        <strong className="status-badge-active">Online</strong>
+                        <span>{t.status}</span>
+                        <strong className="status-badge-active">{t.online}</strong>
                       </div>
                     </div>
                   )}
                   <p className="success-footer-text">
-                    Детали зачисления отправлены на <strong>{user ? user.email : 'ваш e-mail'}</strong>. Мы проверим ID чека и свяжемся с вами в течение 15 минут. Спасибо за доверие!
+                    {t.successFooter}
                   </p>
                   <button className="sidebar-close-btn" onClick={onClose}>
-                    Return to Home
+                    {t.returnHome}
                   </button>
                 </div>
               ) : (
@@ -864,10 +909,15 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     </svg>
                   </div>
                   <h3 className="sidebar-title font-instrument" style={{ marginTop: '24px' }}>
-                    Access Granted!
+                    {t.accessGranted}
                   </h3>
                   <p className="sidebar-subtitle">
-                    Developer profile <strong>{name}</strong> has been successfully authorized and registered locally.
+                    {lang === 'en' 
+                      ? `Developer profile ${name} has been successfully registered.` 
+                      : lang === 'uz' 
+                      ? `Dasturchi profili ${name} muvaffaqiyatli ro'yxatdan o'tdi.` 
+                      : `Профиль разработчика ${name} был успешно зарегистрирован.`
+                    }
                   </p>
                   <div className="success-details-card">
                     <div className="success-details-row" style={{ alignItems: 'center' }}>
@@ -879,11 +929,11 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     </div>
                     <div className="success-details-row">
                       <span>Access:</span>
-                      <strong className="status-badge-active">Authorized</strong>
+                      <strong className="status-badge-active">{t.authorized}</strong>
                     </div>
                   </div>
                   <p className="success-footer-text" style={{ marginBottom: '24px' }}>
-                    You can now proceed to initialize your first project workspace.
+                    {t.authPrompt}
                   </p>
                   <button 
                     className="sidebar-close-btn" 
@@ -897,7 +947,7 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                       border: 'none'
                     }}
                   >
-                    Proceed to Workspace
+                    {t.connectWorkspace}
                   </button>
                 </div>
               )}
