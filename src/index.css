@@ -140,6 +140,10 @@ html, body {
 
 /* CENTERED BRANDING LOGO & TEXT */
 .nav-brand-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -147,7 +151,7 @@ html, body {
   transition: transform 0.3s ease;
 }
 .nav-brand-center:hover {
-  transform: scale(1.03);
+  transform: translate(-50%, -50%) scale(1.03);
 }
 .nav-brand-img {
   width: 26px;
