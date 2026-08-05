@@ -23,7 +23,7 @@ export default function ProjectSidebar({ isOpen, onClose }) {
   const [analysisLogs, setAnalysisLogs] = useState([]);
   const [paymentLogs, setPaymentLogs] = useState([]);
   
-  const [paymentMethod, setPaymentMethod] = useState('humo'); // humo or uzcard
+  const [paymentMethod, setPaymentMethod] = useState('uzcard'); // humo or uzcard
   const [senderInfo, setSenderInfo] = useState(''); // sender card or phone number
   const [transactionId, setTransactionId] = useState(''); // Click/Payme/Uzum receipt transaction ID
   const [isCopied, setIsCopied] = useState(false);
