@@ -133,7 +133,6 @@ export default function App() {
         setIsScrolled(false);
       }
     };
-    window.addEventListener('scroll', handleScroll);
 
     // Stacking cards parallax scroll mechanics
     const handleCardsScroll = () => {
@@ -195,7 +194,20 @@ export default function App() {
         }
       });
     };
-    window.addEventListener('scroll', handleCardsScroll);
+
+    // Unified requestAnimationFrame scroll scheduler for butter-smooth 60FPS
+    let scheduled = false;
+    const onScroll = () => {
+      if (!scheduled) {
+        scheduled = true;
+        requestAnimationFrame(() => {
+          handleScroll();
+          handleCardsScroll();
+          scheduled = false;
+        });
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     setTimeout(handleCardsScroll, 100);
 
     // Wire up IntersectionObserver for scroll-revealed elements using correct .visible class
@@ -236,8 +248,7 @@ export default function App() {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseover', handleMouseOver);
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('scroll', handleCardsScroll);
+      window.removeEventListener('scroll', onScroll);
       observer.disconnect();
     };
   }, []);
