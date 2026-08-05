@@ -384,8 +384,8 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     .catch(err => console.error('Failed to dispatch payment notification:', err));
   };
 
-  const MERCHANT_HUMO = '9860 1201 5567 4821';
-  const MERCHANT_UZCARD = '8600 1402 7839 9924';
+  const MERCHANT_HUMO = import.meta.env.VITE_MERCHANT_HUMO || '9860 1201 5567 4821';
+  const MERCHANT_UZCARD = import.meta.env.VITE_MERCHANT_UZCARD || '8600 1402 7839 9924';
   const activeMerchantCard = paymentMethod === 'humo' ? MERCHANT_HUMO : MERCHANT_UZCARD;
 
   return (
