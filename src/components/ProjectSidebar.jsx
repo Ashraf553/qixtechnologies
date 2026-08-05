@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuthStore, AVATARS, getAvatarUri } from '../store/useAuthStore';
 
 export default function ProjectSidebar({ isOpen, onClose }) {
-  const [step, setStep] = useState(1); // 1: Form (Auth or Project), 2: Loading, 3: Success
+  const [step, setStep] = useState(1); 
+  // steps: 1 (Form), 'ai_analysis' (scanning), 'invoice' (bill details), 'checkout' (card form), 'processing_payment' (paying), 2 (auth loading), 3 (success)
+  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,6 +16,15 @@ export default function ProjectSidebar({ isOpen, onClose }) {
   const [projectName, setProjectName] = useState('');
   const [projectType, setProjectType] = useState('Cloud Sandbox');
   const [projectNotes, setProjectNotes] = useState('');
+
+  // AI & Billing States
+  const [estimatedInvoice, setEstimatedInvoice] = useState(null);
+  const [analysisLogs, setAnalysisLogs] = useState([]);
+  const [paymentLogs, setPaymentLogs] = useState([]);
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvc, setCardCvc] = useState('');
+  const [cardName, setCardName] = useState('');
 
   // Auth store selectors
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
@@ -35,6 +46,13 @@ export default function ProjectSidebar({ isOpen, onClose }) {
         setProjectName('');
         setProjectType('Cloud Sandbox');
         setProjectNotes('');
+        setEstimatedInvoice(null);
+        setAnalysisLogs([]);
+        setPaymentLogs([]);
+        setCardNumber('');
+        setCardExpiry('');
+        setCardCvc('');
+        setCardName('');
       }, 500);
       return () => clearTimeout(timer);
     }
@@ -52,6 +70,136 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     document.addEventListener('mousedown', handleOutsideClick);
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, [isOpen, onClose]);
+
+  // Simulating AI analysis logs
+  useEffect(() => {
+    if (step === 'ai_analysis') {
+      setAnalysisLogs([]);
+      const logs = [
+        "Initializing QIX Intelligence Engine...",
+        "Parsing architectural description notes...",
+        "Scanning specifications for core components...",
+        `Keywords matched for [${projectType}] node...`,
+        "Running deep workload analysis on edge cluster...",
+        "Compiling microservices and compute resource cost...",
+        "AI Analysis complete! Generating invoice..."
+      ];
+      
+      let index = 0;
+      const interval = setInterval(() => {
+        if (index < logs.length) {
+          setAnalysisLogs(prev => [...prev, logs[index]]);
+          index++;
+        } else {
+          clearInterval(interval);
+          setTimeout(() => {
+            setStep('invoice');
+          }, 600);
+        }
+      }, 600);
+      
+      return () => clearInterval(interval);
+    }
+  }, [step, projectType]);
+
+  // Simulating secure ledger payment logs
+  useEffect(() => {
+    if (step === 'processing_payment') {
+      setPaymentLogs([]);
+      const logs = [
+        "Connecting to secure payment gateway...",
+        "Encrypting card credentials via SSL node...",
+        "Verifying transaction validation token...",
+        "Simulating secure ledger gas transfer...",
+        "Disbursing funds to QIX contract vault...",
+        "Payment authorized. Transmitting invoice copy...",
+        "Initializing Sandbox container deploy context..."
+      ];
+
+      let index = 0;
+      const interval = setInterval(() => {
+        if (index < logs.length) {
+          setPaymentLogs(prev => [...prev, logs[index]]);
+          index++;
+        } else {
+          clearInterval(interval);
+          setTimeout(() => {
+            setStep(3);
+          }, 600);
+        }
+      }, 600);
+
+      return () => clearInterval(interval);
+    }
+  }, [step]);
+
+  // AI Invoice Estimator
+  const generateAIEstimate = (notesText, engineType) => {
+    const text = notesText.toLowerCase();
+    const tasksList = [];
+    let totalPrice = 1200; // Base platform fee
+
+    if (text.includes('design') || text.includes('ui') || text.includes('ux') || text.includes('figma') || text.includes('interface')) {
+      tasksList.push({ name: "Custom Figma UI/UX Design & Prototyping", price: 1100 });
+      totalPrice += 1100;
+    }
+    if (text.includes('database') || text.includes('db') || text.includes('sql') || text.includes('mongo') || text.includes('data') || text.includes('backend')) {
+      tasksList.push({ name: "High-Performance Database Node Cluster Setup", price: 1350 });
+      totalPrice += 1350;
+    }
+    if (text.includes('mobile') || text.includes('app') || text.includes('ios') || text.includes('android') || text.includes('phone')) {
+      tasksList.push({ name: "iOS & Android Cross-Platform Frame Deployment", price: 2400 });
+      totalPrice += 2400;
+    }
+    if (text.includes('secure') || text.includes('security') || text.includes('auth') || text.includes('crypto') || text.includes('login')) {
+      tasksList.push({ name: "Post-Quantum Cryptographic Auth Gateways", price: 1500 });
+      totalPrice += 1500;
+    }
+
+    // Default fallbacks to ensure detailed layout
+    if (tasksList.length < 2) {
+      tasksList.push({ name: "Core API Infrastructure & Endpoint Routing", price: 950 });
+      totalPrice += 950;
+    }
+    tasksList.push({ name: `Automated Edge CD Pipeline (${engineType})`, price: 650 });
+    totalPrice += 650;
+
+    const formattedPrice = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalPrice);
+    
+    setEstimatedInvoice({
+      tasks: tasksList.map(t => ({ ...t, price: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(t.price) })),
+      totalPriceRaw: totalPrice,
+      totalPrice: formattedPrice,
+      timeline: totalPrice > 5000 ? "30 Days" : "14 Days"
+    });
+  };
+
+  // Card input helpers
+  const handleCardNumberChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').substring(0, 16);
+    const matches = val.match(/\d{4,16}/g);
+    const match = (matches && matches[0]) || '';
+    const parts = [];
+
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+
+    setCardNumber(parts.length > 0 ? parts.join(' ') : val);
+  };
+
+  const handleExpiryChange = (e) => {
+    let val = e.target.value.replace(/\D/g, '').substring(0, 4);
+    if (val.length >= 2) {
+      val = val.substring(0, 2) + '/' + val.substring(2);
+    }
+    setCardExpiry(val);
+  };
+
+  const handleCvcChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').substring(0, 3);
+    setCardCvc(val);
+  };
 
   // Handle sign up submission
   const handleSignUpSubmit = (e) => {
@@ -103,7 +251,7 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     }, 1800);
   };
 
-  // Handle project initialization submission
+  // Handle project submit (moves to AI estimation analysis)
   const handleProjectSubmit = (e) => {
     e.preventDefault();
     const newErrors = {};
@@ -118,8 +266,42 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     }
 
     setErrors({});
-    setStep(2);
-    setLoadingMessage('Provisioning secure cloud sandbox...');
+    
+    // Generate AI assessment details
+    generateAIEstimate(projectNotes, projectType);
+    
+    // Transition to the scanning logs screen
+    setStep('ai_analysis');
+  };
+
+  // Handle payment processing submission
+  const handlePaymentSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = {};
+
+    const cleanCard = cardNumber.replace(/\s/g, '');
+    if (cleanCard.length < 16) {
+      newErrors.cardNumber = 'Card number must be 16 digits';
+    }
+    if (cardExpiry.length < 5) {
+      newErrors.cardExpiry = 'Expiry must be MM/YY';
+    }
+    if (cardCvc.length < 3) {
+      newErrors.cardCvc = 'CVC must be 3 digits';
+    }
+    if (!cardName.trim()) {
+      newErrors.cardName = 'Cardholder name is required';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+    setStep('processing_payment');
+
+    const invoiceSummaryText = estimatedInvoice.tasks.map(t => `${t.name}: ${t.price}`).join(', ');
 
     // Asynchronously dispatch the project details to Web3Forms
     fetch('https://api.web3forms.com/submit', {
@@ -130,28 +312,21 @@ export default function ProjectSidebar({ isOpen, onClose }) {
       },
       body: JSON.stringify({
         access_key: '6b251218-8d3a-4b5f-8227-259b0c552263',
-        subject: `🚀 New QIX Project Request: ${projectName}`,
-        from_name: 'QIX Technologies Gateway',
-        client_name: user ? user.name : 'Authorized Client',
-        client_email: user ? user.email : 'Authorized Email',
+        subject: `💳 PAID QIX Project: ${projectName} (${estimatedInvoice.totalPrice})`,
+        from_name: 'QIX Technologies Billing Gateway',
+        client_name: user ? user.name : cardName,
+        client_email: user ? user.email : 'billing@qix.tech',
         workspace_name: `qix-sandbox-${projectName.toLowerCase().replace(/\s+/g, '-')}`,
         engine_type: projectType,
-        notes: projectNotes || 'No description notes provided.'
+        total_invoiced: estimatedInvoice.totalPrice,
+        estimated_timeline: estimatedInvoice.timeline,
+        invoice_items: invoiceSummaryText,
+        payment_status: 'PAID (Simulated Neural Transaction Completed)',
+        cardholder_name: cardName,
+        notes: projectNotes || 'No notes provided.'
       })
     })
-    .catch(err => console.error('Failed to dispatch project notification:', err));
-
-    setTimeout(() => {
-      setLoadingMessage(`Deploying cluster context: sandbox-${projectName.toLowerCase().replace(/\s+/g, '-')}`);
-    }, 700);
-
-    setTimeout(() => {
-      setLoadingMessage('Registering project details with lead architect...');
-    }, 1400);
-
-    setTimeout(() => {
-      setStep(3);
-    }, 2100);
+    .catch(err => console.error('Failed to dispatch payment notification:', err));
   };
 
   return (
@@ -280,7 +455,7 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     New Workspace
                   </h3>
                   <p className="sidebar-subtitle">
-                    Configure and launch a new sandbox environment associated with your developer profile.
+                    Outline the requirements and specify features for your sandbox project. Our AI will analyze your specifications and generate an estimate.
                   </p>
 
                   <form onSubmit={handleProjectSubmit} className="sidebar-form">
@@ -323,11 +498,11 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     </div>
 
                     <div className="input-group">
-                      <label htmlFor="proj-notes">Deployment Notes</label>
+                      <label htmlFor="proj-notes">Project Requirements (AI Analysis)</label>
                       <textarea 
                         id="proj-notes" 
-                        placeholder="Briefly outline your architectural goals..." 
-                        rows="3"
+                        placeholder="Ex: Need UI design, figma layout, MongoDB database cluster, and email authorization..." 
+                        rows="4"
                         value={projectNotes}
                         onChange={(e) => setProjectNotes(e.target.value)}
                         style={{
@@ -348,13 +523,13 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     <button type="submit" className="sidebar-submit-btn" style={{ marginTop: '16px' }}>
                       <span className="btn-content-inner">
                         <span className="btn-slide-item">
-                          <span>Launch Sandbox</span>
+                          <span>Analyze Requirements</span>
                           <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M3 8h10M9 4l4 4-4 4" />
                           </svg>
                         </span>
                         <span className="btn-slide-item btn-slide-item-hover">
-                          <span>Launch Sandbox</span>
+                          <span>Analyze Requirements</span>
                           <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M3 8h10M9 4l4 4-4 4" />
                           </svg>
@@ -367,7 +542,216 @@ export default function ProjectSidebar({ isOpen, onClose }) {
             </>
           )}
 
-          {/* STEP 2: LOADING */}
+          {/* STEP: AI ANALYSIS RADAR */}
+          {step === 'ai_analysis' && (
+            <div className="sidebar-step-container">
+              <h3 className="sidebar-title font-instrument">Neural Assessment</h3>
+              <p className="sidebar-subtitle">Our neural interpreter is analyzing requirements and estimating resources.</p>
+              
+              <div className="ai-analysis-radar">
+                <div className="radar-ring" />
+                <div className="radar-sweep" />
+                <div className="radar-core" />
+              </div>
+
+              <div className="analysis-log-container">
+                {analysisLogs.map((log, idx) => (
+                  <div key={idx} className="analysis-log-line">
+                    <span style={{ color: '#a855f7', marginRight: '6px' }}>&gt;</span>
+                    {log}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* STEP: INVOICE GENERATED */}
+          {step === 'invoice' && estimatedInvoice && (
+            <div className="sidebar-step-container">
+              <h3 className="sidebar-title font-instrument">AI Cost Breakdown</h3>
+              <p className="sidebar-subtitle">Based on your requirements, the AI has compiled the following invoice quote.</p>
+
+              <div className="invoice-container">
+                <div className="invoice-header-row">
+                  <div>
+                    <span className="invoice-label">Project Target</span>
+                    <div className="invoice-val">{projectName}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span className="invoice-label">Timeline</span>
+                    <div className="invoice-val">{estimatedInvoice.timeline}</div>
+                  </div>
+                </div>
+
+                <div className="invoice-task-list">
+                  <span className="invoice-label">Itemized Tasks</span>
+                  {estimatedInvoice.tasks.map((task, idx) => (
+                    <div key={idx} className="invoice-task-item">
+                      <span className="invoice-task-name">{task.name}</span>
+                      <span className="invoice-task-price">{task.price}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="invoice-total-row">
+                  <div>
+                    <span className="invoice-label">Invoiced Total</span>
+                    <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.4)' }}>Tax & fees included</p>
+                  </div>
+                  <div className="invoice-total-price">{estimatedInvoice.totalPrice}</div>
+                </div>
+              </div>
+
+              <button 
+                className="sidebar-submit-btn" 
+                onClick={() => setStep('checkout')}
+              >
+                <span className="btn-content-inner">
+                  <span className="btn-slide-item">
+                    <span>Proceed to Checkout</span>
+                    <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 8h10M9 4l4 4-4 4" />
+                    </svg>
+                  </span>
+                  <span className="btn-slide-item btn-slide-item-hover">
+                    <span>Proceed to Checkout</span>
+                    <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 8h10M9 4l4 4-4 4" />
+                    </svg>
+                  </span>
+                </span>
+              </button>
+            </div>
+          )}
+
+          {/* STEP: CHECKOUT CARD TERMINAL */}
+          {step === 'checkout' && estimatedInvoice && (
+            <div className="sidebar-step-container">
+              <h3 className="sidebar-title font-instrument">Secure Checkout</h3>
+              <p className="sidebar-subtitle">Submit card details to complete payment and deploy workspace sandbox.</p>
+
+              {/* CARD PREVIEW DESIGN */}
+              <div className="checkout-card-preview">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div className="card-preview-chip" />
+                  <span style={{ fontSize: '10px', letterSpacing: '2px', opacity: 0.7, fontWeight: '700' }}>QIX TRANSACT</span>
+                </div>
+                <div className="card-preview-number">
+                  {cardNumber || '•••• •••• •••• ••••'}
+                </div>
+                <div className="card-preview-bottom">
+                  <div>
+                    <div className="card-preview-holder">CARDHOLDER</div>
+                    <div style={{ fontSize: '13px', fontWeight: '500' }}>{cardName || 'YOUR FULL NAME'}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div className="card-preview-holder">EXPIRES</div>
+                    <div className="card-preview-expiry">{cardExpiry || 'MM/YY'}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CARD FORM */}
+              <form onSubmit={handlePaymentSubmit} className="sidebar-form">
+                <div className="input-group">
+                  <label htmlFor="card-owner">Cardholder Name</label>
+                  <input 
+                    type="text" 
+                    id="card-owner" 
+                    placeholder="Alex Rivera"
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value.toUpperCase())}
+                    className={errors.cardName ? 'input-error' : ''}
+                  />
+                  {errors.cardName && <span className="error-message-text">{errors.cardName}</span>}
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="card-num">Card Number</label>
+                  <input 
+                    type="text" 
+                    id="card-num" 
+                    placeholder="4242 4242 4242 4242"
+                    value={cardNumber}
+                    onChange={handleCardNumberChange}
+                    className={errors.cardNumber ? 'input-error' : ''}
+                  />
+                  {errors.cardNumber && <span className="error-message-text">{errors.cardNumber}</span>}
+                </div>
+
+                <div className="checkout-inputs-row">
+                  <div className="input-group">
+                    <label htmlFor="card-exp">Expiry</label>
+                    <input 
+                      type="text" 
+                      id="card-exp" 
+                      placeholder="MM/YY"
+                      value={cardExpiry}
+                      onChange={handleExpiryChange}
+                      className={errors.cardExpiry ? 'input-error' : ''}
+                    />
+                    {errors.cardExpiry && <span className="error-message-text">{errors.cardExpiry}</span>}
+                  </div>
+
+                  <div className="input-group">
+                    <label htmlFor="card-sec">CVC</label>
+                    <input 
+                      type="password" 
+                      id="card-sec" 
+                      placeholder="•••"
+                      value={cardCvc}
+                      onChange={handleCvcChange}
+                      className={errors.cardCvc ? 'input-error' : ''}
+                    />
+                    {errors.cardCvc && <span className="error-message-text">{errors.cardCvc}</span>}
+                  </div>
+                </div>
+
+                <button type="submit" className="sidebar-submit-btn" style={{ marginTop: '16px' }}>
+                  <span className="btn-content-inner">
+                    <span className="btn-slide-item">
+                      <span>Authorize {estimatedInvoice.totalPrice}</span>
+                      <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 8h10M9 4l4 4-4 4" />
+                      </svg>
+                    </span>
+                    <span className="btn-slide-item btn-slide-item-hover">
+                      <span>Authorize {estimatedInvoice.totalPrice}</span>
+                      <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 8h10M9 4l4 4-4 4" />
+                      </svg>
+                    </span>
+                  </span>
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* STEP: PROCESSING PAYMENT */}
+          {step === 'processing_payment' && (
+            <div className="sidebar-step-container">
+              <h3 className="sidebar-title font-instrument">Payment Transfer</h3>
+              <p className="sidebar-subtitle">Securing ledger credentials. Please do not close this panel.</p>
+              
+              <div className="sidebar-loading-container" style={{ margin: '16px 0 32px' }}>
+                <div className="loading-spinner-wrap">
+                  <div className="pulse-loader-ring" style={{ borderColor: 'rgba(168, 85, 247, 0.4) transparent' }} />
+                  <div className="pulse-loader-core" style={{ background: '#a855f7' }} />
+                </div>
+              </div>
+
+              <div className="analysis-log-container" style={{ color: '#22c55e' }}>
+                {paymentLogs.map((log, idx) => (
+                  <div key={idx} className="analysis-log-line">
+                    <span style={{ color: '#22c55e', marginRight: '6px' }}>✓</span>
+                    {log}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: REGISTER AUTH LOADING */}
           {step === 2 && (
             <div className="sidebar-step-container sidebar-loading-container">
               <div className="loading-spinner-wrap">
@@ -383,7 +767,7 @@ export default function ProjectSidebar({ isOpen, onClose }) {
           {step === 3 && (
             <>
               {projectName ? (
-                /* 3A. PROJECT SUCCESS */
+                /* 3A. PROJECT SUCCESS & PURCHASE RECEIPT */
                 <div className="sidebar-step-container sidebar-success-container">
                   <div className="success-icon-wrap">
                     <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -391,30 +775,37 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     </svg>
                   </div>
                   <h3 className="sidebar-title font-instrument" style={{ marginTop: '24px' }}>
-                    Project Initialized!
+                    Workspace Active!
                   </h3>
                   <p className="sidebar-subtitle">
-                    Your sandbox environment has been successfully provisioned and is online.
+                    Deployment completed. A billing copy of your receipt has been dispatched to your email.
                   </p>
-                  <div className="success-details-card">
-                    <div className="success-details-row">
-                      <span>Workspace:</span>
-                      <strong>qix-sandbox-{projectName.toLowerCase().replace(/\s+/g, '-')}</strong>
+                  
+                  {estimatedInvoice && (
+                    <div className="success-details-card">
+                      <div className="success-details-row">
+                        <span>Workspace:</span>
+                        <strong>qix-sandbox-{projectName.toLowerCase().replace(/\s+/g, '-')}</strong>
+                      </div>
+                      <div className="success-details-row">
+                        <span>Engine:</span>
+                        <strong>{projectType}</strong>
+                      </div>
+                      <div className="success-details-row">
+                        <span>Amount Paid:</span>
+                        <strong style={{ color: '#22c55e', fontFamily: 'monospace' }}>{estimatedInvoice.totalPrice}</strong>
+                      </div>
+                      <div className="success-details-row">
+                        <span>Status:</span>
+                        <strong className="status-badge-active">Online</strong>
+                      </div>
                     </div>
-                    <div className="success-details-row">
-                      <span>Engine:</span>
-                      <strong>{projectType}</strong>
-                    </div>
-                    <div className="success-details-row">
-                      <span>Status:</span>
-                      <strong className="status-badge-active">Active</strong>
-                    </div>
-                  </div>
+                  )}
                   <p className="success-footer-text">
-                    Our lead software architect will contact you within 30 minutes to schedule your technical consultation. Thank you for your trust!
+                    An confirmation mail with details is sent to <strong>{user ? user.email : 'your developer profile'}</strong>. Our engineering lead will review your sandbox parameters and establish connection shortly.
                   </p>
                   <button className="sidebar-close-btn" onClick={onClose}>
-                    Close Panel
+                    Return to Home
                   </button>
                 </div>
               ) : (
@@ -450,7 +841,7 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                   <button 
                     className="sidebar-close-btn" 
                     onClick={() => {
-                      setStep(1); // Return to step 1 (which will now display the Project Form because user is logged in!)
+                      setStep(1); 
                       setErrors({});
                     }}
                     style={{
