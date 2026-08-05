@@ -92,15 +92,19 @@ export default function ProjectSidebar({ isOpen, onClose }) {
           index++;
         } else {
           clearInterval(interval);
-          setTimeout(() => {
-            setStep('invoice');
-          }, 600);
+          // Wait for the invoice data to be available (fetched from Gemini AI API) before proceeding
+          const checkInvoiceInterval = setInterval(() => {
+            if (estimatedInvoice) {
+              clearInterval(checkInvoiceInterval);
+              setStep('invoice');
+            }
+          }, 100);
         }
       }, 600);
       
       return () => clearInterval(interval);
     }
-  }, [step, projectType]);
+  }, [step, projectType, estimatedInvoice]);
 
   // Simulating secure ledger payment logs
   useEffect(() => {
@@ -133,8 +137,8 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     }
   }, [step]);
 
-  // AI Invoice Estimator
-  const generateAIEstimate = (notesText, engineType) => {
+  // Local fallback estimator if AI API is offline or not configured
+  const generateFallbackEstimate = (notesText, engineType) => {
     const text = notesText.trim().toLowerCase();
     const tasksList = [];
     let totalPrice = 12; // Base platform fee
@@ -271,12 +275,49 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     }
 
     setErrors({});
-    
-    // Generate AI assessment details
-    generateAIEstimate(projectNotes, projectType);
-    
-    // Transition to the scanning logs screen
     setStep('ai_analysis');
+    setEstimatedInvoice(null);
+
+    // Call the serverless function to invoke Google Gemini AI
+    fetch('/api/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        projectName,
+        projectType,
+        projectNotes
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      // Map currency format if not already mapped
+      const tasksFormatted = data.tasks.map(t => {
+        let priceStr = t.price;
+        if (typeof t.price === 'number') {
+          priceStr = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(t.price);
+        }
+        return { name: t.name, price: priceStr };
+      });
+
+      let totalStr = data.totalPrice;
+      if (typeof data.totalPrice === 'number') {
+        totalStr = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.totalPrice);
+      }
+
+      setEstimatedInvoice({
+        tasks: tasksFormatted,
+        totalPriceRaw: typeof data.totalPrice === 'number' ? data.totalPrice : parseFloat(String(data.totalPrice).replace(/[^0-9.]/g, '')),
+        totalPrice: totalStr,
+        timeline: data.timeline || "7 Days"
+      });
+    })
+    .catch(err => {
+      console.error("AI Analysis API failed, using fallback:", err);
+      // Fallback local estimation
+      generateFallbackEstimate(projectNotes, projectType);
+    });
   };
 
   // Handle payment processing submission
