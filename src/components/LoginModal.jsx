@@ -137,53 +137,91 @@ export default function LoginModal({ isOpen, onClose, isRequiredNotice }) {
     }, 1500);
   };
 
-  const handleSocialLogin = (provider) => {
-    if (provider === 'Google') {
-      setIsGoogleChooserOpen(true);
-    } else if (provider === 'Apple') {
-      setIsAppleChooserOpen(true);
+  const handleOfficialGoogleLogin = () => {
+    if (window.google) {
+      try {
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1097241285098-dummy.apps.googleusercontent.com',
+          scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+          callback: async (tokenResponse) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              setIsLoading(true);
+              setSocialProvider('Google');
+              try {
+                const res = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`);
+                const data = await res.json();
+                
+                // Set success state to show welcome splash screen
+                setIsLoading(false);
+                setSuccess(true);
+                
+                setTimeout(() => {
+                  login(data.email, data.name || data.given_name, data.picture);
+                  setSuccess(false);
+                  setSocialProvider(null);
+                  onClose();
+                }, 1200);
+              } catch (err) {
+                setError('Google User Info fetch failed: ' + err.message);
+                setIsLoading(false);
+                setSocialProvider(null);
+              }
+            }
+          },
+          error_callback: (err) => {
+            setError('Google Identity error: ' + err.message);
+          }
+        });
+        client.requestAccessToken({ prompt: 'select_account' });
+      } catch (e) {
+        setError('Google Sign-In initialization error. Check Client ID config.');
+      }
+    } else {
+      setError('Google Sign-In is still loading. Please try again.');
     }
   };
 
-  const selectGoogleAccount = (name, email, colors) => {
-    setIsGoogleChooserOpen(false);
-    setIsLoading(true);
-    setSocialProvider('Google');
-    
-    setTimeout(() => {
-      setIsLoading(false);
-      setSuccess(true);
-      
-      const avatarUri = getAvatarUri(colors);
-      
-      setTimeout(() => {
-        login(email, name, avatarUri);
-        setSuccess(false);
-        setSocialProvider(null);
-        onClose();
-      }, 1200);
-    }, 1200);
-  };
-
-  const selectAppleAccount = (name, email) => {
-    setIsAppleChooserOpen(false);
-    setIsLoading(true);
-    setSocialProvider('Apple');
-    
-    setTimeout(() => {
-      setIsLoading(false);
-      setSuccess(true);
-      
-      const colors = ['#000000', '#444444'];
-      const avatarUri = getAvatarUri(colors);
-      
-      setTimeout(() => {
-        login(email, name, avatarUri);
-        setSuccess(false);
-        setSocialProvider(null);
-        onClose();
-      }, 1200);
-    }, 1200);
+  const handleOfficialAppleLogin = () => {
+    if (window.AppleID) {
+      try {
+        window.AppleID.auth.init({
+          clientId: import.meta.env.VITE_APPLE_CLIENT_ID || 'com.qix.technologies.auth',
+          scope: 'name email',
+          redirectURI: window.location.origin,
+          state: 'qix_state',
+          usePopup: true
+        });
+        window.AppleID.auth.signIn()
+          .then((res) => {
+            if (res && res.user) {
+              const email = res.user.email;
+              const name = res.user.name ? `${res.user.name.firstName} ${res.user.name.lastName}` : 'Apple User';
+              
+              setIsLoading(true);
+              setSocialProvider('Apple');
+              
+              setTimeout(() => {
+                setIsLoading(false);
+                setSuccess(true);
+                
+                setTimeout(() => {
+                  login(email, name, getAvatarUri(['#000000', '#333333']));
+                  setSuccess(false);
+                  setSocialProvider(null);
+                  onClose();
+                }, 1200);
+              }, 800);
+            }
+          })
+          .catch((err) => {
+            setError('Apple Sign-In failed: ' + err.message);
+          });
+      } catch (e) {
+        setError('Apple Sign-In initialization error.');
+      }
+    } else {
+      setError('Apple SDK is still loading. Please try again.');
+    }
   };
 
   const revealedCount = revealed.filter(Boolean).length;
