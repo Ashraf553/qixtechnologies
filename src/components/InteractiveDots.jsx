@@ -125,7 +125,8 @@ export default function InteractiveDots() {
     let documentHeight = Math.max(
       document.documentElement.scrollHeight,
       document.body.scrollHeight,
-      window.innerHeight
+      window.innerHeight,
+      8000
     );
     let rows = Math.ceil(documentHeight / spacing) + 1;
 
@@ -136,7 +137,8 @@ export default function InteractiveDots() {
       documentHeight = Math.max(
         document.documentElement.scrollHeight,
         document.body.scrollHeight,
-        window.innerHeight
+        window.innerHeight,
+        8000
       );
 
       cols = Math.ceil(width / spacing) + 1;
@@ -155,7 +157,7 @@ export default function InteractiveDots() {
             y: homeY + (Math.random() - 0.5) * 8,
             vx: 0,
             vy: 0,
-            radius: 1.5 + Math.random() * 0.7,
+            radius: 2.2 + Math.random() * 0.8,
             activation: 0,
           });
         }
@@ -302,13 +304,13 @@ export default function InteractiveDots() {
             const p2 = dots[idx2];
             if (p2) {
               const maxAct = Math.max(p1.activation, p2.activation);
-              const lineOpacity = 0.08 + maxAct * 0.16;
+              const lineOpacity = 0.18 + maxAct * 0.22;
               
               if (maxAct > 0.01) {
                 // Glow neon cyan/purple mix when activated
                 ctx.strokeStyle = `hsla(${265 - maxAct * 85}, 80%, 60%, ${lineOpacity})`;
               } else {
-                ctx.strokeStyle = `rgba(139, 92, 246, ${lineOpacity})`;
+                ctx.strokeStyle = `rgba(168, 85, 247, ${lineOpacity})`;
               }
               
               ctx.beginPath();
@@ -324,12 +326,12 @@ export default function InteractiveDots() {
             const p3 = dots[idx3];
             if (p3) {
               const maxAct = Math.max(p1.activation, p3.activation);
-              const lineOpacity = 0.08 + maxAct * 0.16;
+              const lineOpacity = 0.18 + maxAct * 0.22;
               
               if (maxAct > 0.01) {
                 ctx.strokeStyle = `hsla(${265 - maxAct * 85}, 80%, 60%, ${lineOpacity})`;
               } else {
-                ctx.strokeStyle = `rgba(139, 92, 246, ${lineOpacity})`;
+                ctx.strokeStyle = `rgba(168, 85, 247, ${lineOpacity})`;
               }
               
               ctx.beginPath();
@@ -343,12 +345,12 @@ export default function InteractiveDots() {
           const hue = 265 - p1.activation * 85;
           const saturation = 55 + p1.activation * 45;
           const lightness = 48 + p1.activation * 22;
-          const opacity = 0.32 + p1.activation * 0.55;
+          const opacity = 0.55 + p1.activation * 0.45;
           const radius = p1.radius + p1.activation * 1.6;
 
           // Draw outer soft glow aura
           if (p1.activation > 0.05) {
-            ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${p1.activation * 0.12})`;
+            ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${p1.activation * 0.2})`;
             ctx.beginPath();
             ctx.arc(p1DrawX, p1DrawY, radius * 3.5, 0, Math.PI * 2);
             ctx.fill();
