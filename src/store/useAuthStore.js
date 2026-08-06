@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 export const AVATARS = [
   { id: 'avatar-1', colors: ['#ff416c', '#ff4b2b'], name: 'Crimson Sunset' },
@@ -15,30 +14,60 @@ export const getAvatarUri = (colors) => {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 };
 
-export const useAuthStore = create(
-  persist(
-    (set) => ({
-      user: null,
-      isLoggedIn: false,
-      
-      // Action to log in user with email, name and avatar
-      login: (email, name, avatar) => set({ 
-        isLoggedIn: true, 
-        user: { 
-          email, 
-          name: name,
-          avatar: avatar || getAvatarUri(AVATARS[0].colors)
-        } 
-      }),
-      
-      // Action to log out user
-      logout: () => set({ 
-        isLoggedIn: false, 
-        user: null 
-      })
-    }),
-    {
-      name: 'qix-auth-storage', // key name in localStorage
+// Direct, synchronous loading of the stored authentication state from localStorage
+const getPersistedState = () => {
+  try {
+    const data = localStorage.getItem('qix-auth-storage');
+    if (data) {
+      const parsed = JSON.parse(data);
+      if (parsed && parsed.state) {
+        return {
+          user: parsed.state.user || null,
+          isLoggedIn: !!parsed.state.isLoggedIn
+        };
+      }
     }
-  )
-);
+  } catch (e) {
+    console.error('Failed to load persisted auth state:', e);
+  }
+  return { user: null, isLoggedIn: false };
+};
+
+const initialSession = getPersistedState();
+
+export const useAuthStore = create((set) => ({
+  user: initialSession.user,
+  isLoggedIn: initialSession.isLoggedIn,
+  
+  // Action to log in user with email, name and avatar
+  login: (email, name, avatar) => {
+    const newUser = { 
+      email, 
+      name,
+      avatar: avatar || getAvatarUri(AVATARS[0].colors)
+    };
+    
+    set({ isLoggedIn: true, user: newUser });
+    
+    // Save to localStorage immediately
+    try {
+      localStorage.setItem('qix-auth-storage', JSON.stringify({
+        state: { isLoggedIn: true, user: newUser }
+      }));
+    } catch (e) {
+      console.error('Failed to persist auth state:', e);
+    }
+  },
+  
+  // Action to log out user
+  logout: () => {
+    set({ isLoggedIn: false, user: null });
+    
+    // Clear localStorage immediately
+    try {
+      localStorage.removeItem('qix-auth-storage');
+    } catch (e) {
+      console.error('Failed to remove persisted auth state:', e);
+    }
+  }
+}));
