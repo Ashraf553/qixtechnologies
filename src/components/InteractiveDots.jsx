@@ -115,9 +115,9 @@ export default function InteractiveDots() {
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     let dots = [];
-    // Spacing increases on mobile to reduce active node calculations by 60%
+    // Spacing increases on mobile and desktop to reduce calculations and render loads
     const isMobile = width < 768;
-    const spacing = isMobile ? 65 : 46; 
+    const spacing = isMobile ? 85 : 60; 
     let cols = Math.ceil(width / spacing) + 1;
     let rows = Math.ceil(height / spacing) + 1;
 
@@ -126,7 +126,7 @@ export default function InteractiveDots() {
       height = canvas.height = window.innerHeight;
 
       const currentIsMobile = width < 768;
-      const currentSpacing = currentIsMobile ? 65 : 46;
+      const currentSpacing = currentIsMobile ? 85 : 60;
 
       cols = Math.ceil(width / currentSpacing) + 1;
       rows = Math.ceil(height / currentSpacing) + 1;
@@ -252,18 +252,14 @@ export default function InteractiveDots() {
             const p2 = dots[idx2];
             if (p2) {
               const maxAct = Math.max(p1.activation, p2.activation);
-              const lineOpacity = 0.06 + maxAct * 0.14;
-              
-              if (maxAct > 0.01) {
+              if (maxAct > 0.05) {
+                const lineOpacity = 0.06 + maxAct * 0.14;
                 ctx.strokeStyle = `hsla(${265 - maxAct * 85}, 80%, 60%, ${lineOpacity})`;
-              } else {
-                ctx.strokeStyle = `rgba(139, 92, 246, ${lineOpacity})`;
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
               }
-              
-              ctx.beginPath();
-              ctx.moveTo(p1.x, p1.y);
-              ctx.lineTo(p2.x, p2.y);
-              ctx.stroke();
             }
           }
 
@@ -273,18 +269,14 @@ export default function InteractiveDots() {
             const p3 = dots[idx3];
             if (p3) {
               const maxAct = Math.max(p1.activation, p3.activation);
-              const lineOpacity = 0.06 + maxAct * 0.14;
-              
-              if (maxAct > 0.01) {
+              if (maxAct > 0.05) {
+                const lineOpacity = 0.06 + maxAct * 0.14;
                 ctx.strokeStyle = `hsla(${265 - maxAct * 85}, 80%, 60%, ${lineOpacity})`;
-              } else {
-                ctx.strokeStyle = `rgba(139, 92, 246, ${lineOpacity})`;
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p3.x, p3.y);
+                ctx.stroke();
               }
-              
-              ctx.beginPath();
-              ctx.moveTo(p1.x, p1.y);
-              ctx.lineTo(p3.x, p3.y);
-              ctx.stroke();
             }
           }
 

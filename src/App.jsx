@@ -65,6 +65,8 @@ export default function App() {
 
   // Initialize Lenis Smooth Scrolling
   useEffect(() => {
+    if (window.innerWidth < 1024) return;
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -76,13 +78,17 @@ export default function App() {
       infinite: false,
     });
 
+    let rafId;
     function raf(time) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
-    return () => lenis.destroy();
+    return () => {
+      lenis.destroy();
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Set mount animation flag
@@ -292,8 +298,6 @@ export default function App() {
         </div>
 
         <div className="nav-right nav-links">
-          <a href="#scale">{t.scale}</a>
-
           {/* LANG SWITCHER */}
           <div className="lang-switcher">
             <button onClick={() => setLang('ru')} className={lang === 'ru' ? 'active' : ''}>RU</button>
@@ -366,7 +370,6 @@ export default function App() {
       <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
         <a href="#services" onClick={() => setIsMobileMenuOpen(false)}>{t.services}</a>
         <a href="#expertise" onClick={() => setIsMobileMenuOpen(false)}>{t.expertise}</a>
-        <a href="#scale" onClick={() => setIsMobileMenuOpen(false)}>{t.scale}</a>
 
         {/* MOBILE LANG SWITCHER */}
         <div className="mobile-lang-switcher">
