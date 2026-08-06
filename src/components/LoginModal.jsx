@@ -16,8 +16,6 @@ export default function LoginModal({ isOpen, onClose, isRequiredNotice }) {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [socialProvider, setSocialProvider] = useState(null);
-  const [isGoogleChooserOpen, setIsGoogleChooserOpen] = useState(false);
-  const [isAppleChooserOpen, setIsAppleChooserOpen] = useState(false);
 
   // Cubes grid state (21 letters)
   const [revealed, setRevealed] = useState(Array(TOTAL_LETTERS).fill(false));
@@ -43,8 +41,6 @@ export default function LoginModal({ isOpen, onClose, isRequiredNotice }) {
       setOrbPos({ x: -1000, y: -1000 });
       setIsHovered(false);
       setSocialProvider(null);
-      setIsGoogleChooserOpen(false);
-      setIsAppleChooserOpen(false);
     }
   }, [isOpen]);
 
@@ -248,7 +244,7 @@ export default function LoginModal({ isOpen, onClose, isRequiredNotice }) {
                     <button 
                       type="button" 
                       className="social-btn google-btn" 
-                      onClick={() => handleSocialLogin('Google')}
+                      onClick={handleOfficialGoogleLogin}
                       disabled={isLoading}
                     >
                       <svg viewBox="0 0 24 24" width="18" height="18">
@@ -262,7 +258,7 @@ export default function LoginModal({ isOpen, onClose, isRequiredNotice }) {
                     <button 
                       type="button" 
                       className="social-btn apple-btn" 
-                      onClick={() => handleSocialLogin('Apple')}
+                      onClick={handleOfficialAppleLogin}
                       disabled={isLoading}
                     >
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
@@ -456,108 +452,6 @@ export default function LoginModal({ isOpen, onClose, isRequiredNotice }) {
           </div>
         </div>
       </div>
-
-      {/* GOOGLE ACC CHOOSER POPUP SIMULATION */}
-      {isGoogleChooserOpen && (
-        <div className="google-oauth-overlay" onClick={() => setIsGoogleChooserOpen(false)}>
-          <div className="google-oauth-window" onClick={(e) => e.stopPropagation()}>
-            <div className="google-oauth-header">
-              <svg viewBox="0 0 24 24" width="24" height="24" className="google-icon-svg">
-                <path fill="#EA4335" d="M12 5.04c1.67 0 3.2.58 4.38 1.71l3.27-3.27C17.68 1.54 15.02 1 12 1 7.24 1 3.2 3.73 1.25 7.72l3.85 2.99C6.03 7.42 8.78 5.04 12 5.04z" />
-                <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.45h6.44c-.28 1.48-1.12 2.73-2.38 3.58l3.69 2.87c2.16-2 3.74-4.94 3.74-8.56z" />
-                <path fill="#FBBC05" d="M5.1 14.71a6.99 6.99 0 010-4.42L1.25 7.3a11.97 11.97 0 000 9.4l3.85-2.99z" />
-                <path fill="#34A853" d="M12 23c3.24 0 5.97-1.08 7.96-2.92l-3.69-2.87c-1.1.74-2.52 1.18-4.27 1.18-3.22 0-5.97-2.38-6.9-5.67l-3.85 2.99C3.2 20.27 7.24 23 12 23z" />
-              </svg>
-              <h2>{lang === 'en' ? 'Choose an account' : lang === 'uz' ? 'Hisobni tanlang' : 'Выбор аккаунта'}</h2>
-              <p style={{ margin: '0 0 24px 0' }}>
-                {lang === 'en' 
-                  ? 'to continue to QIX Technologies' 
-                  : lang === 'uz' 
-                  ? 'QIX Technologies ilovasiga o\'tish uchun' 
-                  : 'для перехода в приложение QIX Technologies'}
-              </p>
-            </div>
-
-            <div className="google-oauth-accounts">
-              <button type="button" className="google-account-row" onClick={() => selectGoogleAccount('BADALBAEV.A', 'badalbaev.a@gmail.com', ['#a855f7', '#3b82f6'])}>
-                <div className="google-avatar-circle" style={{ background: '#a855f7' }}>B</div>
-                <div className="google-account-info">
-                  <span className="google-name">BADALBAEV.A</span>
-                  <span className="google-email">badalbaev.a@gmail.com</span>
-                </div>
-              </button>
-
-              <button type="button" className="google-account-row" onClick={() => selectGoogleAccount('Ashraf Askarov', 'ashraf.askarov@gmail.com', ['#ff416c', '#ff4b2b'])}>
-                <div className="google-avatar-circle" style={{ background: '#ff416c' }}>A</div>
-                <div className="google-account-info">
-                  <span className="google-name">Ashraf Askarov</span>
-                  <span className="google-email">ashraf.askarov@gmail.com</span>
-                </div>
-              </button>
-
-              <button type="button" className="google-account-row" onClick={() => selectGoogleAccount('Google Developer', 'google.dev@qix.com', ['#10b981', '#059669'])}>
-                <div className="google-avatar-circle google-add-icon">
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-                  </svg>
-                </div>
-                <div className="google-account-info">
-                  <span className="google-name" style={{ color: '#1a73e8' }}>
-                    {lang === 'en' ? 'Use another account' : lang === 'uz' ? 'Boshqa hisobdan foydalanish' : 'Войти в другой аккаунт'}
-                  </span>
-                </div>
-              </button>
-            </div>
-
-            <div className="google-oauth-footer">
-              <span>
-                {lang === 'en' 
-                  ? 'To continue, Google will share your name, email address, language preference, and profile picture with QIX Technologies.' 
-                  : lang === 'uz' 
-                  ? 'Davom etish uchun Google ismingizni, emailingizni, til tanlovingizni va profilingiz rasmini QIX Technologies bilan baham ko\'radi.' 
-                  : 'Чтобы продолжить, Google предоставит приложению QIX Technologies ваше имя, адрес электронной почты, языковые настройки и фото профиля.'}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* APPLE ID SIMULATION */}
-      {isAppleChooserOpen && (
-        <div className="apple-oauth-overlay" onClick={() => setIsAppleChooserOpen(false)}>
-          <div className="apple-oauth-window" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="apple-oauth-close" onClick={() => setIsAppleChooserOpen(false)}>✕</button>
-            <div className="apple-oauth-header">
-              <svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor" style={{ color: '#fff', marginBottom: '8px' }}>
-                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.22.67-2.94 1.51-.63.73-1.18 1.87-1.03 2.98 1.12.09 2.27-.56 2.98-1.43z" />
-              </svg>
-              <h2>Apple ID</h2>
-              <p>
-                {lang === 'en' 
-                  ? 'Sign in with your Apple ID to continue to QIX Technologies.' 
-                  : lang === 'uz' 
-                  ? 'QIX Technologies ilovasiga kirish uchun Apple ID-ingizdan foydalaning.' 
-                  : 'Войдите со своим Apple ID для перехода в приложение QIX Technologies.'}
-              </p>
-            </div>
-
-            <div className="apple-oauth-body">
-              <div className="apple-id-row">
-                <span className="apple-id-label">Apple ID</span>
-                <span className="apple-id-value">badalbaev.a@icloud.com</span>
-              </div>
-              
-              <button type="button" className="apple-continue-btn" onClick={() => selectAppleAccount('BADALBAEV.A', 'badalbaev.a@icloud.com')}>
-                {lang === 'en' ? 'Continue with Touch ID / Face ID' : lang === 'uz' ? 'Touch ID / Face ID orqali davom etish' : 'Продолжить с Touch ID / Face ID'}
-              </button>
-              
-              <button type="button" className="apple-use-other-btn" onClick={() => selectAppleAccount('Apple Developer', 'apple.dev@qix.com')}>
-                {lang === 'en' ? 'Use a different Apple ID' : lang === 'uz' ? 'Boshqa Apple ID-dan foydalanish' : 'Использовать другой Apple ID'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
