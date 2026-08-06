@@ -55,14 +55,14 @@ export default function InteractiveDots() {
         return;
       }
 
-      // Click shockwave in document space
+      // Click shockwave in document space (original values)
       ripples.push({
         x: e.clientX,
         y: e.clientY + window.scrollY,
         radius: 0,
         maxRadius: 380, // Expand up to 380px
         speed: 9.0,     // Speed of wave front propagation
-        force: 130,     // Physical impact force
+        force: 110,     // Original physical impact force
         width: 65,      // Width of the wave crest
       });
 
@@ -108,7 +108,7 @@ export default function InteractiveDots() {
           radius: 0,
           maxRadius: 280, // slightly smaller on mobile for visual density
           speed: 8.0,
-          force: 110,
+          force: 90,
           width: 50,
         });
 
@@ -146,13 +146,10 @@ export default function InteractiveDots() {
     let dots = [];
     const spacing = 40; // Spacing between dots in pixels
     let cols = Math.ceil(width / spacing) + 1;
-    
-    // Guarantee enough rows to cover page scrolling up to 8000px depth
     let documentHeight = Math.max(
       document.documentElement.scrollHeight,
       document.body.scrollHeight,
-      window.innerHeight,
-      8000
+      window.innerHeight
     );
     let rows = Math.ceil(documentHeight / spacing) + 1;
 
@@ -163,8 +160,7 @@ export default function InteractiveDots() {
       documentHeight = Math.max(
         document.documentElement.scrollHeight,
         document.body.scrollHeight,
-        window.innerHeight,
-        8000
+        window.innerHeight
       );
 
       cols = Math.ceil(width / spacing) + 1;
@@ -183,7 +179,7 @@ export default function InteractiveDots() {
             y: homeY + (Math.random() - 0.5) * 8,
             vx: 0,
             vy: 0,
-            radius: 2.2 + Math.random() * 0.8,
+            radius: 1.5 + Math.random() * 0.7, // Original sizes
             activation: 0,
           });
         }
@@ -193,28 +189,29 @@ export default function InteractiveDots() {
     initDots();
     window.addEventListener('resize', initDots);
 
-    // Physics parameters for smooth elastic return
+    // Original physics parameters
     let time = 0;
     const springStrength = 0.045;
     const damping = 0.88;
     const maxRepulsion = 48; // Max pixels a dot can be pushed away by hover
-
-    let lastScrollY = window.scrollY;
-    let scrollVelocity = 0;
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const deltaY = currentScrollY - lastScrollY;
-      lastScrollY = currentScrollY;
-      scrollVelocity += deltaY;
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
 
     const animate = () => {
       time += 1;
       ctx.clearRect(0, 0, width, height);
 
       const currentScrollY = window.scrollY;
+
+      // Periodically check if document height has changed
+      if (time % 100 === 0) {
+        const currentDocHeight = Math.max(
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight,
+          window.innerHeight
+        );
+        if (Math.abs(currentDocHeight - documentHeight) > 100) {
+          initDots();
+        }
+      }
 
       // Mouse position in document space
       let mouseDocX = -1000;
@@ -237,16 +234,6 @@ export default function InteractiveDots() {
       });
       // Remove finished ripples
       ripples = ripples.filter((ripple) => ripple.radius < ripple.maxRadius);
-
-      // Apply scroll drag force (organic scroll wiggle physics)
-      if (Math.abs(scrollVelocity) > 0.05) {
-        dots.forEach((dot) => {
-          dot.vy -= scrollVelocity * 0.035;
-        });
-        scrollVelocity *= 0.70; // Fast decay for clean responsive stop
-      }
-
-      const maxDispSq = 22 * 22; // 484 (pre-calculated squared maximum displacement)
 
       // 1. Update dot positions with spring physics, mouse hover and click shockwaves
       dots.forEach((dot) => {
@@ -293,7 +280,7 @@ export default function InteractiveDots() {
             const totalImpact = crestProximity * expansionFade;
 
             const angle = Math.atan2(rdy, rdx);
-            const impulse = totalImpact * ripple.force * 0.18;
+            const impulse = totalImpact * ripple.force * 0.12;
 
             // Push dot velocity outwards
             dot.vx += Math.cos(angle) * impulse;
@@ -315,21 +302,9 @@ export default function InteractiveDots() {
 
         dot.x += dot.vx;
         dot.y += dot.vy;
-
-        // Performance Optimization: Check squared distance first to avoid Math.sqrt calls
-        const dxFromHome = dot.x - dot.homeX;
-        const dyFromHome = dot.y - dot.homeY;
-        const distSq = dxFromHome * dxFromHome + dyFromHome * dyFromHome;
-        if (distSq > maxDispSq) {
-          const dist = Math.sqrt(distSq);
-          dot.x = dot.homeX + (dxFromHome / dist) * 22;
-          dot.y = dot.homeY + (dyFromHome / dist) * 22;
-          dot.vx *= 0.55;
-          dot.vy *= 0.55;
-        }
       });
 
-      // 2. Draw connections and dots (rendering optimization: only loop and draw rows in viewport)
+      // 2. Draw connections and dots (rendering optimization: only draw dots inside viewport)
       ctx.lineWidth = 0.8;
       
       const startRow = Math.max(0, Math.floor((currentScrollY - 80) / spacing));
@@ -345,18 +320,19 @@ export default function InteractiveDots() {
           const p1DrawX = p1.x;
           const p1DrawY = p1.y - currentScrollY;
 
-          // Connect to right neighbor (extremely fast, no Math.sqrt checks needed!)
+          // Connect to right neighbor
           if (c < cols - 1) {
             const idx2 = r * cols + (c + 1);
             const p2 = dots[idx2];
             if (p2) {
               const maxAct = Math.max(p1.activation, p2.activation);
-              const lineOpacity = 0.18 + maxAct * 0.22;
+              const lineOpacity = 0.08 + maxAct * 0.16;
               
               if (maxAct > 0.01) {
+                // Glow neon cyan/purple mix when activated
                 ctx.strokeStyle = `hsla(${265 - maxAct * 85}, 80%, 60%, ${lineOpacity})`;
               } else {
-                ctx.strokeStyle = `rgba(168, 85, 247, ${lineOpacity})`;
+                ctx.strokeStyle = `rgba(139, 92, 246, ${lineOpacity})`;
               }
               
               ctx.beginPath();
@@ -366,18 +342,18 @@ export default function InteractiveDots() {
             }
           }
 
-          // Connect to bottom neighbor (extremely fast, no Math.sqrt checks needed!)
+          // Connect to bottom neighbor
           if (r < rows - 1) {
             const idx3 = (r + 1) * cols + c;
             const p3 = dots[idx3];
             if (p3) {
               const maxAct = Math.max(p1.activation, p3.activation);
-              const lineOpacity = 0.18 + maxAct * 0.22;
+              const lineOpacity = 0.08 + maxAct * 0.16;
               
               if (maxAct > 0.01) {
                 ctx.strokeStyle = `hsla(${265 - maxAct * 85}, 80%, 60%, ${lineOpacity})`;
               } else {
-                ctx.strokeStyle = `rgba(168, 85, 247, ${lineOpacity})`;
+                ctx.strokeStyle = `rgba(139, 92, 246, ${lineOpacity})`;
               }
               
               ctx.beginPath();
@@ -391,12 +367,12 @@ export default function InteractiveDots() {
           const hue = 265 - p1.activation * 85;
           const saturation = 55 + p1.activation * 45;
           const lightness = 48 + p1.activation * 22;
-          const opacity = 0.55 + p1.activation * 0.45;
+          const opacity = 0.32 + p1.activation * 0.55;
           const radius = p1.radius + p1.activation * 1.6;
 
           // Draw outer soft glow aura
           if (p1.activation > 0.05) {
-            ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${p1.activation * 0.2})`;
+            ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${p1.activation * 0.12})`;
             ctx.beginPath();
             ctx.arc(p1DrawX, p1DrawY, radius * 3.5, 0, Math.PI * 2);
             ctx.fill();
@@ -424,7 +400,6 @@ export default function InteractiveDots() {
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('resize', initDots);
-      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
