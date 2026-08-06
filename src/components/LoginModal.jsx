@@ -15,6 +15,7 @@ export default function LoginModal({ isOpen, onClose, isRequiredNotice }) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [socialProvider, setSocialProvider] = useState(null);
 
   // Cubes grid state (21 letters)
   const [revealed, setRevealed] = useState(Array(TOTAL_LETTERS).fill(false));
@@ -39,6 +40,7 @@ export default function LoginModal({ isOpen, onClose, isRequiredNotice }) {
       setGameWon(false);
       setOrbPos({ x: -1000, y: -1000 });
       setIsHovered(false);
+      setSocialProvider(null);
     }
   }, [isOpen]);
 
@@ -135,6 +137,29 @@ export default function LoginModal({ isOpen, onClose, isRequiredNotice }) {
     }, 1500);
   };
 
+  const handleSocialLogin = (provider) => {
+    setIsLoading(true);
+    setError('');
+    setSocialProvider(provider);
+    
+    setTimeout(() => {
+      setIsLoading(false);
+      setSuccess(true);
+      
+      const userEmail = provider === 'Google' ? 'google.dev@qix.com' : 'apple.dev@qix.com';
+      const userName = provider === 'Google' ? 'Google Developer' : 'Apple Developer';
+      const avatarColors = provider === 'Google' ? ['#4285F4', '#34A853'] : ['#000000', '#666666'];
+      const avatarUri = getAvatarUri(avatarColors);
+
+      setTimeout(() => {
+        login(userEmail, userName, avatarUri);
+        setSuccess(false);
+        setSocialProvider(null);
+        onClose();
+      }, 1200);
+    }, 1500);
+  };
+
   const revealedCount = revealed.filter(Boolean).length;
   const remainingLetters = TOTAL_LETTERS - revealedCount;
 
@@ -186,6 +211,39 @@ export default function LoginModal({ isOpen, onClose, isRequiredNotice }) {
                       ? (lang === 'en' ? 'Register your developer identity to access QIX nodes.' : lang === 'uz' ? 'QIX tugunlariga kirish uchun dasturchi profilingizni yarating.' : 'Зарегистрируйте профиль разработчика для доступа к узлам QIX.')
                       : (lang === 'en' ? 'Connect with your credentials to resume your session.' : lang === 'uz' ? 'Sessiyangizni tiklash uchun hisob ma\'lumotlaringizni kiriting.' : 'Войдите под своими учетными данными, чтобы возобновить сессию.')}
                   </p>
+                </div>
+
+                <div className="auth-social-buttons-wrapper">
+                  <div className="auth-social-buttons">
+                    <button 
+                      type="button" 
+                      className="social-btn google-btn" 
+                      onClick={() => handleSocialLogin('Google')}
+                      disabled={isLoading}
+                    >
+                      <svg viewBox="0 0 24 24" width="18" height="18">
+                        <path fill="#EA4335" d="M12 5.04c1.67 0 3.2.58 4.38 1.71l3.27-3.27C17.68 1.54 15.02 1 12 1 7.24 1 3.2 3.73 1.25 7.72l3.85 2.99C6.03 7.42 8.78 5.04 12 5.04z" />
+                        <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.45h6.44c-.28 1.48-1.12 2.73-2.38 3.58l3.69 2.87c2.16-2 3.74-4.94 3.74-8.56z" />
+                        <path fill="#FBBC05" d="M5.1 14.71a6.99 6.99 0 010-4.42L1.25 7.3a11.97 11.97 0 000 9.4l3.85-2.99z" />
+                        <path fill="#34A853" d="M12 23c3.24 0 5.97-1.08 7.96-2.92l-3.69-2.87c-1.1.74-2.52 1.18-4.27 1.18-3.22 0-5.97-2.38-6.9-5.67l-3.85 2.99C3.2 20.27 7.24 23 12 23z" />
+                      </svg>
+                      Google
+                    </button>
+                    <button 
+                      type="button" 
+                      className="social-btn apple-btn" 
+                      onClick={() => handleSocialLogin('Apple')}
+                      disabled={isLoading}
+                    >
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.22.67-2.94 1.51-.63.73-1.18 1.87-1.03 2.98 1.12.09 2.27-.56 2.98-1.43z" />
+                      </svg>
+                      Apple
+                    </button>
+                  </div>
+                  <div className="auth-social-divider">
+                    <span>{lang === 'en' ? 'or' : lang === 'uz' ? 'yoki' : 'или'}</span>
+                  </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="auth-panel-form">
@@ -294,10 +352,12 @@ export default function LoginModal({ isOpen, onClose, isRequiredNotice }) {
                 </div>
                 <h3 className="auth-panel-title" style={{ marginTop: '24px' }}>{t.accessGranted}</h3>
                 <p className="auth-panel-subtitle" style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '14px' }}>
-                  {lang === 'en' ? 'Welcome back' : lang === 'uz' ? 'Xush kelibsiz' : 'Добро пожаловать обратно'}, {isSignUp ? name.trim() : email.split('@')[0]}
+                  {lang === 'en' ? 'Welcome' : lang === 'uz' ? 'Xush kelibsiz' : 'Добро пожаловать'}, {socialProvider ? `${socialProvider} Developer` : (isSignUp ? name.trim() : email.split('@')[0])}
                 </p>
                 <p className="auth-panel-subtitle" style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.3)', marginTop: '8px' }}>
-                  {lang === 'en' ? 'Decrypting user credentials & authorization keys...' : lang === 'uz' ? 'Foydalanuvchi ma\'lumotlari va avtorizatsiya kalitlari ochilmoqda...' : 'Дешифрование данных пользователя и ключей авторизации...'}
+                  {socialProvider 
+                    ? (lang === 'en' ? `Connecting securely via ${socialProvider} ID...` : lang === 'uz' ? `${socialProvider} ID orqali xavfsiz ulanmoqda...` : `Безопасное подключение через ${socialProvider} ID...`)
+                    : (lang === 'en' ? 'Decrypting user credentials & authorization keys...' : lang === 'uz' ? 'Foydalanuvchi ma\'lumotlari va avtorizatsiya kalitlari ochilmoqda...' : 'Дешифрование данных пользователя и ключей авторизации...')}
                 </p>
               </div>
             )}
