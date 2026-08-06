@@ -149,7 +149,8 @@ export default function InteractiveDots() {
     let documentHeight = Math.max(
       document.documentElement.scrollHeight,
       document.body.scrollHeight,
-      window.innerHeight
+      window.innerHeight,
+      8000
     );
     let rows = Math.ceil(documentHeight / spacing) + 1;
 
@@ -160,7 +161,8 @@ export default function InteractiveDots() {
       documentHeight = Math.max(
         document.documentElement.scrollHeight,
         document.body.scrollHeight,
-        window.innerHeight
+        window.innerHeight,
+        8000
       );
 
       cols = Math.ceil(width / spacing) + 1;
@@ -200,18 +202,6 @@ export default function InteractiveDots() {
       ctx.clearRect(0, 0, width, height);
 
       const currentScrollY = window.scrollY;
-
-      // Periodically check if document height has changed
-      if (time % 100 === 0) {
-        const currentDocHeight = Math.max(
-          document.documentElement.scrollHeight,
-          document.body.scrollHeight,
-          window.innerHeight
-        );
-        if (Math.abs(currentDocHeight - documentHeight) > 100) {
-          initDots();
-        }
-      }
 
       // Mouse position in document space
       let mouseDocX = -1000;
