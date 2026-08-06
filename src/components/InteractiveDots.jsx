@@ -58,7 +58,7 @@ export default function InteractiveDots() {
         radius: 0,
         maxRadius: 380, // Expand up to 380px
         speed: 9.0,     // Speed of wave front propagation
-        force: 110,     // Physical impact force
+        force: 85,      // Calibrated physical impact force
         width: 65,      // Width of the wave crest
       });
     };
@@ -92,7 +92,7 @@ export default function InteractiveDots() {
           radius: 0,
           maxRadius: 280, // slightly smaller on mobile for visual density
           speed: 8.0,
-          force: 90,
+          force: 75,
           width: 50,
         });
       }
@@ -280,6 +280,18 @@ export default function InteractiveDots() {
 
         dot.x += dot.vx;
         dot.y += dot.vy;
+
+        // Clamp displacement from home position to prevent grid tangling / rollover bugs
+        const dxFromHome = dot.x - dot.homeX;
+        const dyFromHome = dot.y - dot.homeY;
+        const distFromHome = Math.sqrt(dxFromHome * dxFromHome + dyFromHome * dyFromHome);
+        const maxDisplacement = 22; // Keep it under spacing / 2 (spacing is 40)
+        if (distFromHome > maxDisplacement) {
+          dot.x = dot.homeX + (dxFromHome / distFromHome) * maxDisplacement;
+          dot.y = dot.homeY + (dyFromHome / distFromHome) * maxDisplacement;
+          dot.vx *= 0.55;
+          dot.vy *= 0.55;
+        }
       });
 
       // 2. Draw connections and dots (rendering optimization: only draw dots inside viewport)
