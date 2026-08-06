@@ -5,7 +5,7 @@ import { useLangStore, translations } from '../store/useLangStore';
 const PHRASE_LETTERS = "THANKYOUFORCHOOSINGUS";
 const TOTAL_LETTERS = PHRASE_LETTERS.length; // 21 letters
 
-export default function LoginModal({ isOpen, onClose }) {
+export default function LoginModal({ isOpen, onClose, isRequiredNotice }) {
   const login = useAuthStore((state) => state.login);
   const [isSignUp, setIsSignUp] = useState(true);
   const [name, setName] = useState('');
@@ -154,6 +154,29 @@ export default function LoginModal({ isOpen, onClose }) {
             {!success ? (
               <>
                 <div className="auth-logo-area">
+                  {isRequiredNotice && (
+                    <div className="premium-auth-notice" style={{ marginTop: 0, marginBottom: '20px' }}>
+                      <div className="notice-glow-ring" />
+                      <div className="notice-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M12 15v2m0-8V7m0 11a1 1 0 100-2 1 1 0 000 2zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                      <div className="notice-text">
+                        <span className="notice-tag">
+                          {lang === 'en' ? 'Authorization Required' : lang === 'uz' ? 'Avtorizatsiya Zarur' : 'Требуется авторизация'}
+                        </span>
+                        <p className="notice-description" style={{ fontSize: '12px' }}>
+                          {lang === 'en' 
+                            ? 'To configure a new workspace and start your project, please register or log in first.' 
+                            : lang === 'uz' 
+                            ? 'Yangi loyihani boshlash uchun avval tizimga kiring yoki ro\'yxatdan o\'ting.' 
+                            : 'Чтобы создать проект, пожалуйста, сначала войдите или зарегистрируйтесь.'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <span className="auth-decor-bullet">✦</span>
                   <h3 className="auth-panel-title">
                     {isSignUp ? t.createAccount.toUpperCase() : (lang === 'en' ? 'ESTABLISH SESSION' : lang === 'uz' ? 'TIZIMGA KIRISH' : 'УСТАНОВИТЬ СЕССИЮ')}

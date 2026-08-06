@@ -46,6 +46,18 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isProjectSidebarOpen, setIsProjectSidebarOpen] = useState(false);
+  const [isAuthRequiredForProject, setIsAuthRequiredForProject] = useState(false);
+
+  const handleStartProjectClick = (e) => {
+    if (e) e.preventDefault();
+    if (!isLoggedIn) {
+      setIsAuthRequiredForProject(true);
+      setIsLoginOpen(true);
+    } else {
+      setIsProjectSidebarOpen(true);
+    }
+  };
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeFormation, setActiveFormation] = useState(1);
   const [isMounted, setIsMounted] = useState(false);
@@ -333,7 +345,7 @@ export default function App() {
           )}
           
           <Magnetic>
-            <a href="#contact" className="nav-cta" onClick={(e) => { e.preventDefault(); setIsProjectSidebarOpen(true); }}>
+            <a href="#contact" className="nav-cta" onClick={handleStartProjectClick}>
               <span className="btn-content-inner">
                 <span className="btn-slide-item">
                   <span>{t.startProject}</span>
@@ -386,7 +398,7 @@ export default function App() {
           </a>
         )}
         
-        <a href="#contact" className="mobile-cta" onClick={(e) => { e.preventDefault(); setIsMobileMenuOpen(false); setIsProjectSidebarOpen(true); }}>{t.startProject}</a>
+        <a href="#contact" className="mobile-cta" onClick={(e) => { setIsMobileMenuOpen(false); handleStartProjectClick(e); }}>{t.startProject}</a>
       </div>
 
       {/* BACKGROUND GRAPHICS CONTAINER */}
@@ -438,7 +450,7 @@ export default function App() {
                   </a>
                 </Magnetic>
                 <Magnetic>
-                  <a href="#contact" className="btn-secondary" onClick={(e) => { e.preventDefault(); setIsProjectSidebarOpen(true); }}>
+                  <a href="#contact" className="btn-secondary" onClick={handleStartProjectClick}>
                     <span className="btn-content-inner">
                       <span className="btn-slide-item">
                         <span>{lang === 'en' ? 'Get in Touch' : lang === 'uz' ? 'Bog\'lanish' : 'Связаться'}</span>
@@ -698,7 +710,7 @@ export default function App() {
                     <span>Node.js</span>
                   </div>
                   <Magnetic>
-                    <a href="#contact" className="btn-primary" onClick={(e) => { e.preventDefault(); setIsProjectSidebarOpen(true); }}>
+                    <a href="#contact" className="btn-primary" onClick={handleStartProjectClick}>
                       <span className="btn-content-inner">
                         <span className="btn-slide-item">
                           <span>{t.viewCase}</span>
@@ -743,7 +755,7 @@ export default function App() {
                     <span>GraphQL</span>
                   </div>
                   <Magnetic>
-                    <a href="#contact" className="btn-primary" onClick={(e) => { e.preventDefault(); setIsProjectSidebarOpen(true); }}>
+                    <a href="#contact" className="btn-primary" onClick={handleStartProjectClick}>
                       <span className="btn-content-inner">
                         <span className="btn-slide-item">
                           <span>{t.viewCase}</span>
@@ -820,7 +832,7 @@ export default function App() {
           <p className="cta-sub reveal reveal-delay-2">{t.ctaDesc}</p>
           <div className="cta-actions reveal reveal-delay-3">
             <Magnetic>
-              <button className="btn-primary" onClick={() => setIsProjectSidebarOpen(true)}>
+              <button className="btn-primary" onClick={() => handleStartProjectClick()}>
                 <span className="btn-content-inner">
                   <span className="btn-slide-item">
                     <span>{t.startProject}</span>
@@ -838,7 +850,7 @@ export default function App() {
               </button>
             </Magnetic>
             <Magnetic>
-              <button className="btn-secondary" onClick={() => setIsProjectSidebarOpen(true)}>
+              <button className="btn-secondary" onClick={() => handleStartProjectClick()}>
                 <span className="btn-content-inner">
                   <span className="btn-slide-item">
                     <span>{lang === 'en' ? 'Get in Touch' : lang === 'uz' ? 'Bog\'lanish' : 'Связаться'}</span>
@@ -876,7 +888,11 @@ export default function App() {
       <SettingsPanel isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
       {/* AUTHENTICATION 3D GLASSMOPRHIC LOGIN MODAL */}
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+      <LoginModal 
+        isOpen={isLoginOpen} 
+        onClose={() => { setIsLoginOpen(false); setIsAuthRequiredForProject(false); }} 
+        isRequiredNotice={isAuthRequiredForProject}
+      />
 
       <ProjectSidebar isOpen={isProjectSidebarOpen} onClose={() => setIsProjectSidebarOpen(false)} />
       {/* Custom cursor trailing elements */}

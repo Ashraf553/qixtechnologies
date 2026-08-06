@@ -408,27 +408,6 @@ export default function ProjectSidebar({ isOpen, onClose }) {
               {!isLoggedIn ? (
                 /* 1A. SIGN UP FORM */
                 <div className="sidebar-step-container">
-                  <div className="premium-auth-notice">
-                    <div className="notice-glow-ring" />
-                    <div className="notice-icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12 15v2m0-8V7m0 11a1 1 0 100-2 1 1 0 000 2zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                    <div className="notice-text">
-                      <span className="notice-tag">
-                        {lang === 'en' ? 'Authorization Required' : lang === 'uz' ? 'Avtorizatsiya Zarur' : 'Требуется авторизация'}
-                      </span>
-                      <p className="notice-description">
-                        {lang === 'en' 
-                          ? 'To configure a new workspace and analyze project pricing, please register your developer profile below.' 
-                          : lang === 'uz' 
-                          ? 'Yangi ishchi maydonini yaratish va loyiha narxini tahlil qilish uchun quyida profil oching.' 
-                          : 'Чтобы настроить рабочую область и рассчитать смету ИИ, пожалуйста, зарегистрируйте ваш профиль разработчика ниже.'}
-                      </p>
-                    </div>
-                  </div>
-
                   <div className="sidebar-decor-icon">✦</div>
                   <h3 className="sidebar-title font-instrument">
                     {t.establishIdentity}
