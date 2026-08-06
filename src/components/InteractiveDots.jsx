@@ -62,7 +62,7 @@ export default function InteractiveDots() {
         radius: 0,
         maxRadius: 380, // Expand up to 380px
         speed: 9.0,     // Speed of wave front propagation
-        force: 85,      // Calibrated physical impact force
+        force: 130,     // Physical impact force
         width: 65,      // Width of the wave crest
       });
 
@@ -108,7 +108,7 @@ export default function InteractiveDots() {
           radius: 0,
           maxRadius: 280, // slightly smaller on mobile for visual density
           speed: 8.0,
-          force: 75,
+          force: 110,
           width: 50,
         });
 
@@ -293,7 +293,7 @@ export default function InteractiveDots() {
             const totalImpact = crestProximity * expansionFade;
 
             const angle = Math.atan2(rdy, rdx);
-            const impulse = totalImpact * ripple.force * 0.12;
+            const impulse = totalImpact * ripple.force * 0.18;
 
             // Push dot velocity outwards
             dot.vx += Math.cos(angle) * impulse;
