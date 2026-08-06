@@ -3445,8 +3445,13 @@ html, body {
   background: none;
   border-bottom: 1px solid #f1f3f4;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.15s ease, padding 0.15s ease;
   text-align: left;
+}
+
+.google-account-row:active {
+  transform: scale(0.97);
+  opacity: 0.9;
 }
 
 .google-account-row:last-child {
@@ -3594,11 +3599,16 @@ html, body {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.15s ease;
 }
 
 .apple-continue-btn:hover {
   opacity: 0.9;
+}
+
+.apple-continue-btn:active {
+  transform: scale(0.96);
+  opacity: 0.8;
 }
 
 .apple-use-other-btn {
@@ -3638,6 +3648,10 @@ html, body {
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
+}
+
+.social-btn:active {
+  transform: scale(0.96) translateY(0) !important;
 }
 
 .google-btn {
