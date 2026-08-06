@@ -37,7 +37,7 @@ export default function InteractiveDots() {
     };
 
     const handleMouseDown = (e) => {
-      // Do not trigger shockwaves when clicking buttons, links, or inputs
+      // Do not trigger shockwaves when clicking buttons, links, inputs, sidebars or overlays
       if (
         e.target.tagName === 'A' ||
         e.target.tagName === 'BUTTON' ||
@@ -46,7 +46,11 @@ export default function InteractiveDots() {
         e.target.closest('input') ||
         e.target.closest('textarea') ||
         e.target.closest('.user-profile-badge') ||
-        e.target.closest('.settings-toggle')
+        e.target.closest('.settings-toggle') ||
+        e.target.closest('.project-sidebar') ||
+        e.target.closest('.auth-fullscreen-overlay') ||
+        e.target.closest('.mobile-menu') ||
+        e.target.closest('.settings-panel')
       ) {
         return;
       }
@@ -61,6 +65,14 @@ export default function InteractiveDots() {
         force: 85,      // Calibrated physical impact force
         width: 65,      // Width of the wave crest
       });
+
+      // Trigger subtle screen shake
+      document.body.classList.remove('screen-shake-active');
+      void document.body.offsetWidth; // force reflow
+      document.body.classList.add('screen-shake-active');
+      setTimeout(() => {
+        document.body.classList.remove('screen-shake-active');
+      }, 150);
     };
 
     const handleTouchStart = (e) => {
@@ -80,7 +92,11 @@ export default function InteractiveDots() {
             target.closest('input') ||
             target.closest('textarea') ||
             target.closest('.user-profile-badge') ||
-            target.closest('.settings-toggle')
+            target.closest('.settings-toggle') ||
+            target.closest('.project-sidebar') ||
+            target.closest('.auth-fullscreen-overlay') ||
+            target.closest('.mobile-menu') ||
+            target.closest('.settings-panel')
           ) {
             return;
           }
@@ -95,6 +111,14 @@ export default function InteractiveDots() {
           force: 75,
           width: 50,
         });
+
+        // Trigger subtle screen shake
+        document.body.classList.remove('screen-shake-active');
+        void document.body.offsetWidth; // force reflow
+        document.body.classList.add('screen-shake-active');
+        setTimeout(() => {
+          document.body.classList.remove('screen-shake-active');
+        }, 150);
       }
     };
 
