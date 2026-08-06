@@ -384,10 +384,9 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     .catch(err => console.error('Failed to dispatch payment notification:', err));
   };
 
-  const MERCHANT_HUMO = import.meta.env.VITE_MERCHANT_HUMO || '9860 1201 5567 4821';
   const MERCHANT_UZCARD = import.meta.env.VITE_MERCHANT_UZCARD || '5614 6835 1781 0909';
-  const MERCHANT_NAME = import.meta.env.VITE_MERCHANT_NAME || 'ASHRAF ASKAROV';
-  const activeMerchantCard = paymentMethod === 'humo' ? MERCHANT_HUMO : MERCHANT_UZCARD;
+  const MERCHANT_NAME = import.meta.env.VITE_MERCHANT_NAME || 'BADALBAEV.A';
+  const activeMerchantCard = MERCHANT_UZCARD;
 
   return (
     <div className={`project-sidebar-overlay ${isOpen ? 'open' : ''}`}>
@@ -685,41 +684,21 @@ export default function ProjectSidebar({ isOpen, onClose }) {
           {/* STEP: CHECKOUT CARD TERMINAL (UZBEKISTAN P2P STYLE) */}
           {step === 'checkout' && estimatedInvoice && (
             <div className="sidebar-step-container">
-              <h3 className="sidebar-title font-instrument">Humo / Uzcard P2P</h3>
+              <h3 className="sidebar-title font-instrument">Uzcard P2P</h3>
               <p className="sidebar-subtitle" style={{ marginBottom: '16px' }}>
                 {lang === 'en' ? 'Transfer ' : lang === 'uz' ? 'O\'tkazing: ' : 'Переведите '}
                 <strong>{estimatedInvoice.totalPrice}</strong>
-                {lang === 'en' ? ' to the card below via local mobile banking (Humo/Uzcard) and paste your transaction receipt code.' : lang === 'uz' ? ' quyidagi kartaga va tasdiqlash uchun chek ID-sini kiriting.' : ' на карту ниже через Click/Payme и вставьте код чека для подтверждения.'}
+                {lang === 'en' ? ' to the card below via local mobile banking (Uzcard) and paste your transaction receipt code.' : lang === 'uz' ? ' quyidagi kartaga va tasdiqlash uchun chek ID-sini kiriting.' : ' на карту ниже через Click/Payme и вставьте код чека для подтверждения.'}
               </p>
 
-              {/* PAYMENT METHOD TABS */}
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <button 
-                  type="button"
-                  className={`settings-tab-btn ${paymentMethod === 'humo' ? 'active' : ''}`}
-                  onClick={() => setPaymentMethod('humo')}
-                  style={{ flex: 1, padding: '10px', fontSize: '12px' }}
-                >
-                  HUMO
-                </button>
-                <button 
-                  type="button"
-                  className={`settings-tab-btn ${paymentMethod === 'uzcard' ? 'active' : ''}`}
-                  onClick={() => setPaymentMethod('uzcard')}
-                  style={{ flex: 1, padding: '10px', fontSize: '12px' }}
-                >
-                  UZCARD
-                </button>
-              </div>
-
-              {/* CARD PREVIEW DESIGN (HUMO/UZCARD THEMED) */}
-              <div className={`checkout-card-preview ${paymentMethod === 'humo' ? 'humo-theme' : 'uzcard-theme'}`}>
+              {/* CARD PREVIEW DESIGN (UZCARD THEMED) */}
+              <div className="checkout-card-preview uzcard-theme">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div className="card-preview-chip" />
                   
                   {/* BRAND TEXT & LOGO */}
                   <span style={{ fontSize: '13px', fontWeight: '800', letterSpacing: '1px', color: '#fff' }}>
-                    {paymentMethod === 'humo' ? 'HUMO' : 'UZCARD'}
+                    UZCARD
                   </span>
                 </div>
                 
