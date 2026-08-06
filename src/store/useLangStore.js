@@ -21,7 +21,7 @@ export const translations = {
     startProject: "Start Project",
     disconnect: "Disconnect",
     // Hero
-    heroTitle: "The Best Web Studio.",
+    heroTitle: "The Best Web Studio in Uzbekistan.",
     heroTitleSub: "Making websites beautifully.",
     heroDesc: "We design, develop, and launch high-performance websites and mobile apps. We handle the engineering so you can grow.",
     heroStatsProjects: "Projects Launched",
@@ -127,7 +127,7 @@ export const translations = {
     startProject: "Начать проект",
     disconnect: "Выйти",
     // Hero
-    heroTitle: "Лучшая веб-студия.",
+    heroTitle: "Лучшая веб-студия в Узбекистане.",
     heroTitleSub: "Делаем сайты красиво.",
     heroDesc: "Проектируем, разрабатываем и запускаем быстрые сайты и мобильные приложения. Берем на себя инженерию, чтобы вы могли расти.",
     heroStatsProjects: "Проектов запущено",
@@ -233,7 +233,7 @@ export const translations = {
     startProject: "Loyihani boshlash",
     disconnect: "Chiqish",
     // Hero
-    heroTitle: "Eng yaxshi veb-studiya.",
+    heroTitle: "O'zbekistondagi eng yaxshi veb-studiya.",
     heroTitleSub: "Saytlarni chiroyli qilamiz.",
     heroDesc: "Tezkor veb-saytlar va mobil ilovalarni loyihalashtiramiz, ishlab chiqamiz va ishga tushiramiz. Biz texnologiyalarni o'z zimmamizga olamiz, toki siz o'sa olasiz.",
     heroStatsProjects: "Loyihalar ishga tushirilgan",
