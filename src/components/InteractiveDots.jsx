@@ -130,25 +130,13 @@ export default function InteractiveDots() {
     let dots = [];
     const spacing = 40; // Spacing between dots in pixels
     let cols = Math.ceil(width / spacing) + 1;
-    let documentHeight = Math.max(
-      document.documentElement.scrollHeight,
-      document.body.scrollHeight,
-      window.innerHeight,
-      8000
-    );
+    let documentHeight = 8000; // Solid stable grid depth
     let rows = Math.ceil(documentHeight / spacing) + 1;
 
     const initDots = () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
       
-      documentHeight = Math.max(
-        document.documentElement.scrollHeight,
-        document.body.scrollHeight,
-        window.innerHeight,
-        8000
-      );
-
       cols = Math.ceil(width / spacing) + 1;
       rows = Math.ceil(documentHeight / spacing) + 1;
       dots = [];
@@ -209,86 +197,81 @@ export default function InteractiveDots() {
       // Remove finished ripples
       ripples = ripples.filter((ripple) => ripple.radius < ripple.maxRadius);
 
-      // 1. Update dot positions with spring physics, mouse hover and click shockwaves
-      dots.forEach((dot) => {
-        // Natural background sway (organic water ripple movement)
-        const swayX = Math.sin(time * 0.015 + dot.homeY * 0.008) * 2.5;
-        const swayY = Math.cos(time * 0.012 + dot.homeX * 0.008) * 2.5;
-
-        // Hover Repulsion in Document Space
-        let pushX = 0;
-        let pushY = 0;
-
-        if (mouseDocX !== -1000) {
-          const dx = dot.x - mouseDocX;
-          const dy = dot.y - mouseDocY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < mouse.radius) {
-            const hoverForce = (mouse.radius - dist) / mouse.radius; // 0 to 1
-            const easeForce = Math.pow(hoverForce, 1.5);
-            const angle = Math.atan2(dy, dx);
-            pushX = Math.cos(angle) * easeForce * maxRepulsion;
-            pushY = Math.sin(angle) * easeForce * maxRepulsion;
-            // Keep dot active
-            dot.activation = Math.max(dot.activation, hoverForce);
-          } else {
-            // Slow decay of activation state for a trailing glow effect
-            dot.activation *= 0.94;
-          }
-        } else {
-          dot.activation *= 0.94;
-        }
-
-        // Apply Click Ripples (Shockwaves) in Document Space
-        ripples.forEach((ripple) => {
-          const rdx = dot.x - ripple.x;
-          const rdy = dot.y - ripple.y;
-          const rdist = Math.sqrt(rdx * rdx + rdy * rdy);
-
-          // Calculate proximity to the expanding wave front
-          const waveDiff = Math.abs(rdist - ripple.radius);
-          if (waveDiff < ripple.width) {
-            const crestProximity = 1 - waveDiff / ripple.width; // 0 to 1
-            const expansionFade = 1 - ripple.radius / ripple.maxRadius; // 1 at start, 0 at end
-            const totalImpact = crestProximity * expansionFade;
-
-            const angle = Math.atan2(rdy, rdx);
-            const impulse = totalImpact * ripple.force * 0.12;
-
-            // Push dot velocity outwards
-            dot.vx += Math.cos(angle) * impulse;
-            dot.vy += Math.sin(angle) * impulse;
-
-            // Ignite dot color glow
-            dot.activation = Math.max(dot.activation, totalImpact * 0.85);
-          }
-        });
-
-        const targetX = dot.homeX + pushX + swayX;
-        const targetY = dot.homeY + pushY + swayY;
-
-        // Elastic spring acceleration towards the target position
-        dot.vx += (targetX - dot.x) * springStrength;
-        dot.vy += (targetY - dot.y) * springStrength;
-        dot.vx *= damping;
-        dot.vy *= damping;
-
-        dot.x += dot.vx;
-        dot.y += dot.vy;
-      });
-
-      // 2. Draw connections and dots (rendering optimization: only draw dots inside viewport)
-      ctx.lineWidth = 0.8;
-      
-      const startRow = Math.max(0, Math.floor((currentScrollY - 80) / spacing));
-      const endRow = Math.min(rows, Math.ceil((currentScrollY + height + 80) / spacing));
+      // RENDERING & PHYSICS OPTIMIZATION: Only calculate physics and draw for visible rows
+      const startRow = Math.max(0, Math.floor((currentScrollY - 120) / spacing));
+      const endRow = Math.min(rows, Math.ceil((currentScrollY + height + 120) / spacing));
 
       for (let r = startRow; r < endRow; r++) {
         for (let c = 0; c < cols; c++) {
           const idx1 = r * cols + c;
           const p1 = dots[idx1];
           if (!p1) continue;
+
+          // Natural background sway (organic water ripple movement)
+          const swayX = Math.sin(time * 0.015 + p1.homeY * 0.008) * 2.5;
+          const swayY = Math.cos(time * 0.012 + p1.homeX * 0.008) * 2.5;
+
+          // Hover Repulsion in Document Space
+          let pushX = 0;
+          let pushY = 0;
+
+          if (mouseDocX !== -1000) {
+            const dx = p1.x - mouseDocX;
+            const dy = p1.y - mouseDocY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < mouse.radius) {
+              const hoverForce = (mouse.radius - dist) / mouse.radius; // 0 to 1
+              const easeForce = Math.pow(hoverForce, 1.5);
+              const angle = Math.atan2(dy, dx);
+              pushX = Math.cos(angle) * easeForce * maxRepulsion;
+              pushY = Math.sin(angle) * easeForce * maxRepulsion;
+              // Keep dot active
+              p1.activation = Math.max(p1.activation, hoverForce);
+            } else {
+              // Slow decay of activation state for a trailing glow effect
+              p1.activation *= 0.94;
+            }
+          } else {
+            p1.activation *= 0.94;
+          }
+
+          // Apply Click Ripples (Shockwaves) in Document Space
+          ripples.forEach((ripple) => {
+            const rdx = p1.x - ripple.x;
+            const rdy = p1.y - ripple.y;
+            const rdist = Math.sqrt(rdx * rdx + rdy * rdy);
+
+            // Calculate proximity to the expanding wave front
+            const waveDiff = Math.abs(rdist - ripple.radius);
+            if (waveDiff < ripple.width) {
+              const crestProximity = 1 - waveDiff / ripple.width; // 0 to 1
+              const expansionFade = 1 - ripple.radius / ripple.maxRadius; // 1 at start, 0 at end
+              const totalImpact = crestProximity * expansionFade;
+
+              const angle = Math.atan2(rdy, rdx);
+              const impulse = totalImpact * ripple.force * 0.12;
+
+              // Push dot velocity outwards
+              p1.vx += Math.cos(angle) * impulse;
+              p1.vy += Math.sin(angle) * impulse;
+
+              // Ignite dot color glow
+              p1.activation = Math.max(p1.activation, totalImpact * 0.85);
+            }
+          });
+
+          const targetX = p1.homeX + pushX + swayX;
+          const targetY = p1.homeY + pushY + swayY;
+
+          // Elastic spring acceleration towards the target position
+          p1.vx += (targetX - p1.x) * springStrength;
+          p1.vy += (targetY - p1.y) * springStrength;
+          p1.vx *= damping;
+          p1.vy *= damping;
+
+          p1.x += p1.vx;
+          p1.y += p1.vy;
 
           // Convert document Y coordinates to viewport coordinates for drawing
           const p1DrawX = p1.x;
