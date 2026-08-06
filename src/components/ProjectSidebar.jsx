@@ -385,7 +385,8 @@ export default function ProjectSidebar({ isOpen, onClose }) {
   };
 
   const MERCHANT_HUMO = import.meta.env.VITE_MERCHANT_HUMO || '9860 1201 5567 4821';
-  const MERCHANT_UZCARD = import.meta.env.VITE_MERCHANT_UZCARD || '8600 1402 7839 9924';
+  const MERCHANT_UZCARD = import.meta.env.VITE_MERCHANT_UZCARD || '5614 6835 1781 0909';
+  const MERCHANT_NAME = import.meta.env.VITE_MERCHANT_NAME || 'ASHRAF ASKAROV';
   const activeMerchantCard = paymentMethod === 'humo' ? MERCHANT_HUMO : MERCHANT_UZCARD;
 
   return (
@@ -750,7 +751,7 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     <div className="card-preview-holder">
                       {lang === 'en' ? 'Recipient' : lang === 'uz' ? 'Qabul qiluvchi' : 'Получатель'}
                     </div>
-                    <div style={{ fontSize: '13px', fontWeight: '600' }}>ASHRAF ASKAROV</div>
+                    <div style={{ fontSize: '13px', fontWeight: '600' }}>{MERCHANT_NAME}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div className="card-preview-holder">
