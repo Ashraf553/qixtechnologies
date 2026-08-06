@@ -14,7 +14,7 @@ export default function InteractiveDots() {
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
-    // Mouse coordinates tracking
+    // Mouse coordinates tracking in viewport space
     const mouse = {
       x: -1000,
       y: -1000,
@@ -23,7 +23,7 @@ export default function InteractiveDots() {
       radius: 150, // Repulsion hover radius
     };
 
-    // Active click ripples (shockwaves) in document space
+    // Active click ripples (shockwaves) in viewport space
     let ripples = [];
 
     const handleMouseMove = (e) => {
@@ -51,10 +51,10 @@ export default function InteractiveDots() {
         return;
       }
 
-      // Origin in document space (clientY + scrollY)
+      // Viewport-relative click shockwave (100% correct placement)
       ripples.push({
         x: e.clientX,
-        y: e.clientY + window.scrollY,
+        y: e.clientY,
         radius: 0,
         maxRadius: 380, // Expand up to 380px
         speed: 9.0,     // Speed of wave front propagation
@@ -88,7 +88,7 @@ export default function InteractiveDots() {
 
         ripples.push({
           x: touch.clientX,
-          y: touch.clientY + window.scrollY,
+          y: touch.clientY,
           radius: 0,
           maxRadius: 280, // slightly smaller on mobile for visual density
           speed: 8.0,
@@ -118,37 +118,24 @@ export default function InteractiveDots() {
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
 
-    // Grid dots structure in document space
+    // Grid dots structure in viewport space
     let dots = [];
     const spacing = 40; // Spacing between dots in pixels
     let cols = Math.ceil(width / spacing) + 1;
-    let documentHeight = Math.max(
-      document.documentElement.scrollHeight,
-      document.body.scrollHeight,
-      window.innerHeight,
-      8000
-    );
-    let rows = Math.ceil(documentHeight / spacing) + 1;
+    let rows = Math.ceil(height / spacing) + 2; // Extra rows for seamless wrapping
 
     const initDots = () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
-      
-      documentHeight = Math.max(
-        document.documentElement.scrollHeight,
-        document.body.scrollHeight,
-        window.innerHeight,
-        8000
-      );
 
       cols = Math.ceil(width / spacing) + 1;
-      rows = Math.ceil(documentHeight / spacing) + 1;
+      rows = Math.ceil(height / spacing) + 2;
       dots = [];
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const homeX = c * spacing - (cols * spacing - width) / 2;
-          const homeY = r * spacing; // starts from 0 to documentHeight
+          const homeY = r * spacing - spacing; // starts from -spacing to height + spacing
 
           dots.push({
             homeX,
@@ -173,59 +160,62 @@ export default function InteractiveDots() {
     const damping = 0.88;
     const maxRepulsion = 48; // Max pixels a dot can be pushed away by hover
 
+    let lastScrollY = window.scrollY;
+
     const animate = () => {
       time += 1;
       ctx.clearRect(0, 0, width, height);
 
       const currentScrollY = window.scrollY;
+      const deltaScroll = currentScrollY - lastScrollY;
+      lastScrollY = currentScrollY;
 
-      // Periodically check if document height has changed
-      if (time % 100 === 0) {
-        const currentDocHeight = Math.max(
-          document.documentElement.scrollHeight,
-          document.body.scrollHeight,
-          window.innerHeight
-        );
-        if (Math.abs(currentDocHeight - documentHeight) > 100) {
-          initDots();
-        }
-      }
-
-      // Mouse position in document space
-      let mouseDocX = -1000;
-      let mouseDocY = -1000;
-
-      // Smoothly interpolate the mouse position in viewport space first
+      // Mouse position in viewport space
+      // Smoothly interpolate the mouse position in viewport space
       if (mouse.targetX === -1000) {
         mouse.x += (-1000 - mouse.x) * 0.1;
         mouse.y += (-1000 - mouse.y) * 0.1;
       } else {
         mouse.x += (mouse.targetX - mouse.x) * 0.18;
         mouse.y += (mouse.targetY - mouse.y) * 0.18;
-        mouseDocX = mouse.x;
-        mouseDocY = mouse.y + currentScrollY;
       }
 
-      // Update active ripples in document space
+      // Update active ripples in viewport space
       ripples.forEach((ripple) => {
+        ripple.y -= deltaScroll; // Move ripple with scrolling content
         ripple.radius += ripple.speed;
       });
       // Remove finished ripples
       ripples = ripples.filter((ripple) => ripple.radius < ripple.maxRadius);
 
+      const gridHeight = rows * spacing;
+
       // 1. Update dot positions with spring physics, mouse hover and click shockwaves
       dots.forEach((dot) => {
+        // Apply scroll delta to shift the coordinates in viewport space
+        dot.homeY -= deltaScroll;
+        dot.y -= deltaScroll;
+
+        // Viewport wrapping for infinite scrolling feel
+        if (dot.homeY < -spacing * 1.5) {
+          dot.homeY += gridHeight;
+          dot.y += gridHeight;
+        } else if (dot.homeY > height + spacing * 0.5) {
+          dot.homeY -= gridHeight;
+          dot.y -= gridHeight;
+        }
+
         // Natural background sway (organic water ripple movement)
         const swayX = Math.sin(time * 0.015 + dot.homeY * 0.008) * 2.5;
         const swayY = Math.cos(time * 0.012 + dot.homeX * 0.008) * 2.5;
 
-        // Hover Repulsion in Document Space
+        // Hover Repulsion in Viewport Space
         let pushX = 0;
         let pushY = 0;
 
-        if (mouseDocX !== -1000) {
-          const dx = dot.x - mouseDocX;
-          const dy = dot.y - mouseDocY;
+        if (mouse.x !== -1000) {
+          const dx = dot.x - mouse.x;
+          const dy = dot.y - mouse.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           if (dist < mouse.radius) {
@@ -244,7 +234,7 @@ export default function InteractiveDots() {
           dot.activation *= 0.94;
         }
 
-        // Apply Click Ripples (Shockwaves) in Document Space
+        // Apply Click Ripples (Shockwaves) in Viewport Space
         ripples.forEach((ripple) => {
           const rdx = dot.x - ripple.x;
           const rdy = dot.y - ripple.y;
@@ -294,41 +284,39 @@ export default function InteractiveDots() {
         }
       });
 
-      // 2. Draw connections and dots (rendering optimization: only draw dots inside viewport)
+      // 2. Draw connections and dots in viewport coordinates directly
       ctx.lineWidth = 0.8;
-      
-      const startRow = Math.max(0, Math.floor((currentScrollY - 80) / spacing));
-      const endRow = Math.min(rows, Math.ceil((currentScrollY + height + 80) / spacing));
 
-      for (let r = startRow; r < endRow; r++) {
+      for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const idx1 = r * cols + c;
           const p1 = dots[idx1];
           if (!p1) continue;
-
-          // Convert document Y coordinates to viewport coordinates for drawing
-          const p1DrawX = p1.x;
-          const p1DrawY = p1.y - currentScrollY;
 
           // Connect to right neighbor
           if (c < cols - 1) {
             const idx2 = r * cols + (c + 1);
             const p2 = dots[idx2];
             if (p2) {
-              const maxAct = Math.max(p1.activation, p2.activation);
-              const lineOpacity = 0.18 + maxAct * 0.22;
-              
-              if (maxAct > 0.01) {
-                // Glow neon cyan/purple mix when activated
-                ctx.strokeStyle = `hsla(${265 - maxAct * 85}, 80%, 60%, ${lineOpacity})`;
-              } else {
-                ctx.strokeStyle = `rgba(168, 85, 247, ${lineOpacity})`;
+              const dx = p2.x - p1.x;
+              const dy = p2.y - p1.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              // Only connect if neighbor has not wrapped to the other side
+              if (dist < spacing * 1.5) {
+                const maxAct = Math.max(p1.activation, p2.activation);
+                const lineOpacity = 0.18 + maxAct * 0.22;
+                
+                if (maxAct > 0.01) {
+                  ctx.strokeStyle = `hsla(${265 - maxAct * 85}, 80%, 60%, ${lineOpacity})`;
+                } else {
+                  ctx.strokeStyle = `rgba(168, 85, 247, ${lineOpacity})`;
+                }
+                
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
               }
-              
-              ctx.beginPath();
-              ctx.moveTo(p1DrawX, p1DrawY);
-              ctx.lineTo(p2.x, p2.y - currentScrollY);
-              ctx.stroke();
             }
           }
 
@@ -337,19 +325,25 @@ export default function InteractiveDots() {
             const idx3 = (r + 1) * cols + c;
             const p3 = dots[idx3];
             if (p3) {
-              const maxAct = Math.max(p1.activation, p3.activation);
-              const lineOpacity = 0.18 + maxAct * 0.22;
-              
-              if (maxAct > 0.01) {
-                ctx.strokeStyle = `hsla(${265 - maxAct * 85}, 80%, 60%, ${lineOpacity})`;
-              } else {
-                ctx.strokeStyle = `rgba(168, 85, 247, ${lineOpacity})`;
+              const dx = p3.x - p1.x;
+              const dy = p3.y - p1.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              // Only connect if neighbor has not wrapped to the other side
+              if (dist < spacing * 1.5) {
+                const maxAct = Math.max(p1.activation, p3.activation);
+                const lineOpacity = 0.18 + maxAct * 0.22;
+                
+                if (maxAct > 0.01) {
+                  ctx.strokeStyle = `hsla(${265 - maxAct * 85}, 80%, 60%, ${lineOpacity})`;
+                } else {
+                  ctx.strokeStyle = `rgba(168, 85, 247, ${lineOpacity})`;
+                }
+                
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p3.x, p3.y);
+                ctx.stroke();
               }
-              
-              ctx.beginPath();
-              ctx.moveTo(p1DrawX, p1DrawY);
-              ctx.lineTo(p3.x, p3.y - currentScrollY);
-              ctx.stroke();
             }
           }
 
@@ -364,14 +358,14 @@ export default function InteractiveDots() {
           if (p1.activation > 0.05) {
             ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${p1.activation * 0.2})`;
             ctx.beginPath();
-            ctx.arc(p1DrawX, p1DrawY, radius * 3.5, 0, Math.PI * 2);
+            ctx.arc(p1.x, p1.y, radius * 3.5, 0, Math.PI * 2);
             ctx.fill();
           }
 
           // Draw core dot
           ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${opacity})`;
           ctx.beginPath();
-          ctx.arc(p1DrawX, p1DrawY, radius, 0, Math.PI * 2);
+          ctx.arc(p1.x, p1.y, radius, 0, Math.PI * 2);
           ctx.fill();
         }
       }
