@@ -65,14 +65,6 @@ export default function InteractiveDots() {
         force: 110,     // Original physical impact force
         width: 65,      // Width of the wave crest
       });
-
-      // Trigger subtle screen shake
-      document.body.classList.remove('screen-shake-active');
-      void document.body.offsetWidth; // force reflow
-      document.body.classList.add('screen-shake-active');
-      setTimeout(() => {
-        document.body.classList.remove('screen-shake-active');
-      }, 150);
     };
 
     const handleTouchStart = (e) => {
@@ -111,14 +103,6 @@ export default function InteractiveDots() {
           force: 90,
           width: 50,
         });
-
-        // Trigger subtle screen shake
-        document.body.classList.remove('screen-shake-active');
-        void document.body.offsetWidth; // force reflow
-        document.body.classList.add('screen-shake-active');
-        setTimeout(() => {
-          document.body.classList.remove('screen-shake-active');
-        }, 150);
       }
     };
 

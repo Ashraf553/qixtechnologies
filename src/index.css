@@ -3378,17 +3378,3 @@ html, body {
   border-color: rgba(255, 255, 255, 0.18);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
-
-/* ===== TACTILE KINETIC SCREEN SHAKE ===== */
-@keyframes tactile-shake {
-  0% { transform: translate3d(0, 0, 0); }
-  20% { transform: translate3d(-1.5px, 1px, 0); }
-  40% { transform: translate3d(1.5px, -1px, 0); }
-  60% { transform: translate3d(-1px, -1px, 0); }
-  80% { transform: translate3d(1px, 1px, 0); }
-  100% { transform: translate3d(0, 0, 0); }
-}
-
-.screen-shake-active {
-  animation: tactile-shake 0.15s cubic-bezier(.36,.07,.19,.97) both;
-}
