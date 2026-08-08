@@ -1335,7 +1335,7 @@ html, body {
   .numbers-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .nav { padding: 12px 24px; top: 12px; }
   .nav-links { display: none; }
   .nav-brand-center { position: relative; left: 0; transform: none; }
@@ -2385,7 +2385,7 @@ html, body {
 }
 
 /* Responsive adjustment for sidebar */
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .project-sidebar {
     width: 100vw;
     min-width: 100%;
@@ -2966,32 +2966,61 @@ html, body {
 /* Win congrats banner */
 .game-congrats-banner {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 16px 36px;
-  border-radius: 100px;
-  font-size: 11px;
+  justify-content: center;
+  margin-top: -16px;
+  margin-bottom: 32px;
+  width: 100%;
+  animation: authCongratsFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.game-congrats-text {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 48px;
+  font-style: italic;
+  font-weight: 400;
+  background: linear-gradient(135deg, #ffffff 40%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 25px rgba(168, 85, 247, 0.5));
+  letter-spacing: 0.5px;
+  text-align: center;
+  margin-top: 8px;
+  line-height: 1.1;
+}
+
+.congrats-pulse-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Geist', sans-serif;
+  font-size: 10px;
   font-weight: 700;
+  text-transform: uppercase;
   letter-spacing: 2px;
-  color: #fff;
-  text-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
-  animation: authFieldSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  color: #a855f7;
+  opacity: 0.85;
 }
 
 .congrats-pulse {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 10px #10b981;
+  background: #a855f7;
+  box-shadow: 0 0 10px #a855f7, 0 0 20px #a855f7;
   animation: authCongratsDotPulse 1.5s infinite;
 }
 
+@keyframes authCongratsFadeIn {
+  from { transform: translateY(20px) scale(0.95); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
 @keyframes authCongratsDotPulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.4); opacity: 0.5; }
+  0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 10px #a855f7; }
+  50% { transform: scale(1.4); opacity: 0.5; box-shadow: 0 0 18px #a855f7; }
 }
 
 /* Responsive auth adjustments */
@@ -2999,6 +3028,7 @@ html, body {
   .auth-fullscreen-container {
     flex-direction: column;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
   .auth-left-panel {
@@ -3030,6 +3060,28 @@ html, body {
   .cube-front-dot {
     width: 4px;
     height: 4px;
+  }
+  .game-congrats-text {
+    font-size: 32px !important;
+  }
+  .auth-fullscreen-close {
+    top: 16px !important;
+    right: 16px !important;
+    width: 36px !important;
+    height: 36px !important;
+    background: rgba(2, 2, 3, 0.7) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-congrats-text {
+    font-size: 24px !important;
+    margin-top: 6px;
+  }
+  .game-congrats-banner {
+    margin-top: -8px;
+    margin-bottom: 24px;
   }
 }
 
@@ -3309,41 +3361,78 @@ html, body {
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* Language Switcher Styling */
-.lang-switcher {
+/* ===== LIQUID GLASS LANGUAGE SWITCHER ===== */
+.liquid-switcher-container {
+  position: relative;
   display: flex;
-  gap: 4px;
-  align-items: center;
-  margin: 0 10px;
+  width: 132px;
+  height: 28px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 20px;
-  padding: 2px 4px;
+  border-radius: 30px;
+  padding: 2px;
+  margin: 0 10px;
+  box-sizing: border-box;
+  user-select: none;
+  cursor: pointer;
 }
 
-.lang-switcher button {
+.liquid-bubble {
+  position: absolute;
+  top: 2px;
+  width: 42.66px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  z-index: 1;
+  cursor: grab;
+  transition: transform 0.15s ease-out, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.liquid-switcher-container.dragging .liquid-bubble {
+  cursor: grabbing;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
+  /* Disable transition for smooth dragging response */
+  transition: transform 0.05s ease-out;
+}
+
+/* Snap transition when not dragging */
+.liquid-switcher-container:not(.dragging) .liquid-bubble {
+  transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-lang-btn {
+  position: relative;
+  flex: 1;
+  height: 100%;
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.45);
+  font-family: 'Geist', sans-serif;
   font-size: 10px;
   font-weight: 700;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 20px;
-  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-  font-family: inherit;
   letter-spacing: 0.5px;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.3s ease;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.lang-switcher button:hover {
+.liquid-lang-btn.active {
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.liquid-lang-btn:hover {
   color: rgba(255, 255, 255, 0.95);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.lang-switcher button.active {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 /* Mobile Language Switcher inside Mobile Drawer */
@@ -3352,31 +3441,6 @@ html, body {
   gap: 12px;
   margin: 18px 0;
   justify-content: center;
-}
-
-.mobile-lang-switcher button {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 8px 18px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.mobile-lang-switcher button:hover {
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.mobile-lang-switcher button.active {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* ===== SIMULATED GOOGLE OAUTH STYLING ===== */
@@ -3801,3 +3865,5 @@ html, body {
   margin: 0;
   text-align: left;
 }
+
+

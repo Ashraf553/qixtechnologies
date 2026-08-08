@@ -7,6 +7,7 @@ import NumbersCanvas from './components/NumbersCanvas';
 import SettingsPanel from './components/SettingsPanel';
 import LoginModal from './components/LoginModal';
 import Magnetic from './components/Magnetic';
+import LiquidLangSwitcher from './components/LiquidLangSwitcher';
 import { useAuthStore } from './store/useAuthStore';
 import { useLangStore, translations } from './store/useLangStore';
 
@@ -104,6 +105,35 @@ export default function App() {
   // Set mount animation flag
   useEffect(() => {
     setIsMounted(true);
+  }, []);
+
+  // Parse social auth parameters from redirect URI
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('social_auth') === 'true') {
+      const email = params.get('email');
+      const name = params.get('name');
+      const avatar = params.get('avatar');
+      const warning = params.get('warning');
+
+      // Log the user in
+      useAuthStore.getState().login(email, name, avatar);
+
+      if (warning === 'client_secret_missing') {
+        console.warn("Google Client Secret is not set in environment variables! Using simulated profile.");
+      }
+
+      // Clear the query parameters from URL without reloading the page
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    } else if (params.get('auth_error')) {
+      const errorMsg = params.get('auth_error');
+      console.error("Auth error occurred:", errorMsg);
+      alert(`Authentication failed: ${errorMsg}`);
+      
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
   }, []);
 
   // Custom Cursor trailing logic & scroll tracking
@@ -298,6 +328,8 @@ export default function App() {
       {/* FLOATING PILL NAV WITH LOGO CENTERED (ROOT LEVEL FIXED) */}
       <nav className={`nav ${isScrolled ? 'scrolled' : ''} ${animClass}`}>
         <div className="nav-left nav-links">
+          {/* LIQUID GLASS LANG SWITCHER */}
+          <LiquidLangSwitcher />
           <a href="#services">{t.services}</a>
           <a href="#expertise">{t.expertise}</a>
         </div>
@@ -308,12 +340,6 @@ export default function App() {
         </div>
 
         <div className="nav-right nav-links">
-          {/* LANG SWITCHER */}
-          <div className="lang-switcher">
-            <button onClick={() => setLang('ru')} className={lang === 'ru' ? 'active' : ''}>RU</button>
-            <button onClick={() => setLang('uz')} className={lang === 'uz' ? 'active' : ''}>UZ</button>
-            <button onClick={() => setLang('en')} className={lang === 'en' ? 'active' : ''}>EN</button>
-          </div>
           
           {/* AUTHORIZATION CONDITIONAL BUTTON OR USER BADGE */}
           {isLoggedIn ? (
@@ -382,10 +408,8 @@ export default function App() {
         <a href="#expertise" onClick={() => setIsMobileMenuOpen(false)}>{t.expertise}</a>
 
         {/* MOBILE LANG SWITCHER */}
-        <div className="mobile-lang-switcher">
-          <button onClick={() => { setLang('ru'); setIsMobileMenuOpen(false); }} className={lang === 'ru' ? 'active' : ''}>RU</button>
-          <button onClick={() => { setLang('uz'); setIsMobileMenuOpen(false); }} className={lang === 'uz' ? 'active' : ''}>UZ</button>
-          <button onClick={() => { setLang('en'); setIsMobileMenuOpen(false); }} className={lang === 'en' ? 'active' : ''}>EN</button>
+        <div className="mobile-lang-switcher" style={{ border: 'none', background: 'none', padding: 0 }}>
+          <LiquidLangSwitcher />
         </div>
         
         {isLoggedIn ? (

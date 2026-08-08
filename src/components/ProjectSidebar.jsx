@@ -135,32 +135,64 @@ export default function ProjectSidebar({ isOpen, onClose }) {
   useEffect(() => {
     if (step === 'processing_payment') {
       setPaymentLogs([]);
-      const logs = {
+      
+      const isValid = transactionId && /^\d{8,}$/.test(transactionId.trim());
+      
+      const successLogs = {
         en: [
-          "Connecting to secure payment gateway...",
-          "Locating transaction in Humo/Uzcard P2P ledger...",
-          "Verifying transfer reference ID with Click/Payme...",
-          "Confirming deposit to QIX Technologies vault...",
+          "Connecting to secure billing gateway...",
+          `Verifying Transaction ID "${transactionId}" in Click/Payme registry...`,
+          "Checking transaction recipient card (matches merchant)...",
+          "Validating transfer amount (matches invoiced UZS)...",
+          "Verifying timestamp and checking for duplicate IDs...",
           "Payment authorized. Transmitting invoice copy...",
-          "Initializing Sandbox container deploy context..."
+          "Initializing project container context..."
         ],
         ru: [
           "Подключение к шлюзу авторизации платежей...",
-          "Поиск транзакции в реестре Humo/Uzcard...",
-          "Проверка ID перевода в базе Click/Payme...",
-          "Подтверждение зачисления на счет QIX Technologies...",
-          "Платеж авторизован. Отправка копии чека...",
-          "Инициализация контейнера песочницы..."
+          `Проверка ID транзакции "${transactionId}" в сети Click/Payme...`,
+          "Проверка карты получателя (соответствует реквизитам QIX)...",
+          "Валидация суммы перевода (соответствует выставленному счету)...",
+          "Проверка времени операции и уникальности ID в базе...",
+          "Платеж подтвержден. Зачислено на баланс QIX Technologies...",
+          "Инициализация контейнера проекта..."
         ],
         uz: [
           "To'lov shlyuziga ulanish o'rnatilmoqda...",
-          "Tranzaksiyani Humo/Uzcard reestridan izlash...",
-          "Click/Payme bazasida o'tkazma ID-sini tekshirish...",
-          "QIX Technologies hisobiga pul kelganini tasdiqlash...",
+          `Click/Payme tarmog'ida "${transactionId}" ID-sini tekshirish...`,
+          "Qabul qiluvchi karta raqamini solishtirish (mos keldi)...",
+          "O'tkazma summasini tekshirish (hisob-kitobga mos keldi)...",
+          "Tranzaksiya vaqti va ID takrorlanmaganligini tekshirish...",
           "To'lov tasdiqlandi. Elektron chekni yuborish...",
           "Loyiha konteyneri ishga tushirilmoqda..."
         ]
       }[lang];
+
+      const failureLogs = {
+        en: [
+          "Connecting to secure billing gateway...",
+          `Verifying Transaction ID "${transactionId}" in Click/Payme registry...`,
+          "Checking transaction recipient card (matches merchant)...",
+          `❌ ERROR: Target card in transaction does not match QIX Technologies vault.`,
+          "Transaction rejected. Payment verification failed."
+        ],
+        ru: [
+          "Подключение к шлюзу авторизации платежей...",
+          `Проверка ID транзакции "${transactionId}" в сети Click/Payme...`,
+          "Проверка карты получателя (соответствует реквизитам QIX)...",
+          `❌ ОШИБКА: Получатель в транзакции не совпадает с реквизитами QIX.`,
+          "Платеж отклонен. Ошибка верификации перевода."
+        ],
+        uz: [
+          "To'lov shlyuziga ulanish o'rnatilmoqda...",
+          `Click/Payme tarmog'ida "${transactionId}" ID-sini tekshirish...`,
+          "Qabul qiluvchi karta raqamini solishtirish (mos keldi)...",
+          `❌ XATO: Tranzaksiyadagi qabul qiluvchi karta QIX hisobiga mos kelmadi.`,
+          "To'lov rad etildi. Verifikatsiya xatosi."
+        ]
+      }[lang];
+
+      const logs = isValid ? successLogs : failureLogs;
 
       let index = 0;
       const interval = setInterval(() => {
@@ -170,14 +202,18 @@ export default function ProjectSidebar({ isOpen, onClose }) {
         } else {
           clearInterval(interval);
           setTimeout(() => {
-            setStep(3);
-          }, 600);
+            if (isValid) {
+              setStep(3);
+            } else {
+              setStep('payment_failed');
+            }
+          }, 800);
         }
-      }, 600);
+      }, 700);
 
       return () => clearInterval(interval);
     }
-  }, [step, lang]);
+  }, [step, lang, transactionId]);
 
   // Local fallback estimator if AI API is offline or not configured (UZS pricing)
   const generateFallbackEstimate = (notesText, engineType) => {
@@ -341,10 +377,10 @@ export default function ProjectSidebar({ isOpen, onClose }) {
     e.preventDefault();
     const newErrors = {};
 
-    if (!senderInfo.trim()) {
+    if (!senderInfo || !senderInfo.trim()) {
       newErrors.senderInfo = lang === 'en' ? 'Enter sender info' : lang === 'uz' ? 'Yuboruvchi ma\'lumotini kiriting' : 'Введите данные отправителя';
     }
-    if (!transactionId.trim()) {
+    if (!transactionId || !transactionId.trim()) {
       newErrors.transactionId = lang === 'en' ? 'Enter receipt ID' : lang === 'uz' ? 'Chek kodi kiritilishi shart' : 'Введите код чека';
     }
 
@@ -767,6 +803,13 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                     className={errors.transactionId ? 'input-error' : ''}
                   />
                   {errors.transactionId && <span className="error-message-text">{errors.transactionId}</span>}
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', marginTop: '8px', lineHeight: '1.4', textAlign: 'left' }}>
+                    {lang === 'en' 
+                      ? "💡 Simulation Hint: Enter any number with 8 or more digits to succeed (e.g. 58291483). Entering letters, symbols, spaces, or short numbers will fail verification." 
+                      : lang === 'uz' 
+                      ? "💡 Simulyatsiya maslahati: Muvaffaqiyatli to'lov uchun kamida 8 xonali son kiriting (masalan, 58291483). Harf, belgi, bo'shliq yoki qisqa son kiritilsa xato beradi." 
+                      : "💡 Подсказка симуляции: Введите любое число из 8 или более цифр для успеха (например, 58291483). Ввод букв, символов, пробелов или коротких чисел вызовет ошибку."}
+                  </div>
                 </div>
 
                 <button type="submit" className="sidebar-submit-btn" style={{ marginTop: '16px' }}>
@@ -786,6 +829,61 @@ export default function ProjectSidebar({ isOpen, onClose }) {
                   </span>
                 </button>
               </form>
+            </div>
+          )}
+
+          {/* STEP: PAYMENT FAILED */}
+          {step === 'payment_failed' && (
+            <div className="sidebar-step-container" style={{ textAlign: 'center', padding: '10px 0' }}>
+              <div className="status-icon-container error-shake" style={{
+                background: 'rgba(239, 68, 68, 0.08)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                boxShadow: '0 0 30px rgba(239, 68, 68, 0.15)',
+                color: '#ef4444',
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 24px auto'
+              }}>
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </div>
+              <h3 className="sidebar-title font-instrument" style={{ fontSize: '24px', color: '#ef4444', marginBottom: '8px' }}>
+                {lang === 'en' ? 'Verification Failed' : lang === 'uz' ? 'Tasdiqlash bajarilmadi' : 'Ошибка верификации'}
+              </h3>
+              <p className="sidebar-subtitle" style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.7)', lineHeight: '1.6', marginTop: '12px', marginBottom: '32px', textAlign: 'left' }}>
+                {lang === 'en' 
+                  ? `Transaction ID "${transactionId}" was not found in the Click/Payme registry. Ensure you have transferred the funds to the card and entered a valid 8-digit receipt number.` 
+                  : lang === 'uz' 
+                  ? `"${transactionId}" ID-li tranzaksiya Click/Payme reestridan topilmadi. Kartaga pul o'tkazganingizni va to'g'ri 8 xonali chek kodini kiritganingizni tekshiring.` 
+                  : `ID транзакции "${transactionId}" не найден в реестре Click/Payme. Убедитесь, что вы перевели средства на карту и ввели корректный 8-значный код чека.`}
+              </p>
+              
+              <button 
+                className="sidebar-submit-btn" 
+                onClick={() => setStep('checkout')}
+                style={{ width: '100%' }}
+              >
+                <span className="btn-content-inner">
+                  <span className="btn-slide-item">
+                    <span>{lang === 'en' ? 'Edit Details & Retry' : lang === 'uz' ? 'Tahrirlash va qayta urinish' : 'Исправить реквизиты и повторить'}</span>
+                    <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 8h10M9 4l4 4-4 4" />
+                    </svg>
+                  </span>
+                  <span className="btn-slide-item btn-slide-item-hover">
+                    <span>{lang === 'en' ? 'Edit Details & Retry' : lang === 'uz' ? 'Tahrirlash va qayta urinish' : 'Исправить реквизиты и повторить'}</span>
+                    <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 8h10M9 4l4 4-4 4" />
+                    </svg>
+                  </span>
+                </span>
+              </button>
             </div>
           )}
 
